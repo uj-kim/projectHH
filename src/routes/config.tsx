@@ -6,7 +6,7 @@ import ProductDetail from '@/pages/ProductDetail';
 export interface RouteConfig {
     path: string; // 라우트 경로
     element: ReactNode; // 렌더링할 컴포넌트
-    protected?: boolean; // 인증 필요 여부
+    protected?: false; // 인증 필요 여부
 }
 
 const routes: RouteConfig[] = [
