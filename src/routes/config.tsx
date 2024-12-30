@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import Home from '@/pages/Home';
 import Cart from '@/pages/Cart';
 import ProductDetail from '@/pages/ProductDetail';
+import ProductRegister from '@/pages/ProductRegister';
 
 export interface RouteConfig {
     path: string; // 라우트 경로
@@ -14,6 +15,7 @@ const routes: RouteConfig[] = [
     // { path: '/auth', element: <Auth /> },
     { path: '/product/:id', element: <ProductDetail /> },
     { path: '/cart', element: <Cart /> },
+    { path: '/productregister', element: <ProductRegister /> },
     // { path: '/purchase', element: <Purchase />, protected: true },
     // { path: '/mypage', element: <MyPage />, protected: true },
 ];
