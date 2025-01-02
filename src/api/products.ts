@@ -121,3 +121,26 @@ export const getProducts = async (): Promise<
 
   return data;
 };
+
+/**
+ * 판매자 상품 목록 가져오기
+ * @param sellerId - 판매자 ID
+ * @returns 판매 중인 상품 목록
+ */
+export const getSellerProducts = async (
+  sellerId: string
+): Promise<Database['public']['Tables']['products']['Row'][] | null> => {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('seller_id', sellerId) // 판매자 ID 조건
+    .gt('quantity', 0) // 재고 수량이 0보다 큰 상품만 가져오기
+    .order('created_at', { ascending: false }); // 최신순 정렬
+
+  if (error) {
+    console.error('판매자 상품 목록 가져오기 오류:', error.message);
+    return null;
+  }
+
+  return data;
+};
