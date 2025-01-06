@@ -69,6 +69,7 @@ export const uploadImage = async (file: File): Promise<string | null> => {
   
     return publicUrlData?.publicUrl || null;
   };
+  /**
 
   /**
  * 상품 등록 함수
@@ -143,4 +144,61 @@ export const getSellerProducts = async (
   }
 
   return data;
+};
+
+/**
+ * 특정 상품의 상세 정보를 가져오는 함수
+ * @param productId - 조회할 상품의 ID
+ * @returns - 해당 상품의 정보 또는 null
+ * @throws - 네트워크 오류 또는 서버 오류 발생 시 에러
+ */
+export const getProductById = async (
+  productId: string
+): Promise<Database['public']['Tables']['products']['Row'] | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('product_id', productId)
+      .single(); // 단일 레코드 가져오기
+
+    if (error) {
+      console.error(`상품 조회 오류 (${productId}):`, error.message);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('상품 조회 중 예기치 않은 오류:', error);
+    return null;
+  }
+};
+
+/**
+ * 특정 상품의 정보를 업데이트하는 함수
+ * @param product - 업데이트할 상품의 데이터
+ * @returns - 업데이트된 상품의 정보 또는 null
+ * @throws - 네트워크 오류 또는 서버 오류 발생 시 에러
+ */
+export const updateProduct = async (
+  product: Database['public']['Tables']['products']['Update'] & { product_id: string }
+): Promise<Database['public']['Tables']['products']['Row'] | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .update(product)
+      .eq('product_id', product.product_id)
+      .select('*')
+      .single(); // 업데이트된 단일 레코드 가져오기
+
+    if (error) {
+      console.error(`상품 업데이트 오류 (${product.product_id}):`, error.message);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('상품 업데이트 중 예기치 않은 오류:', error);
+    return null;
+  }
 };
