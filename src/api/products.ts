@@ -183,7 +183,6 @@ export const getProductById = async (
 export const updateProduct = async (
   product: Database['public']['Tables']['products']['Update'] & { product_id: string }
 ): Promise<Database['public']['Tables']['products']['Row'] | null> => {
-  try {
     const { data, error } = await supabase
       .from('products')
       .update(product)
@@ -197,8 +196,24 @@ export const updateProduct = async (
     }
 
     return data;
+};
+
+// **삭제하기 함수 추가**
+export const deleteProduct = async (productId: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .eq('product_id', productId);
+
+    if (error) {
+      console.error('Error deleting product:', error);
+      return false;
+    }
+
+    return true;
   } catch (error) {
-    console.error('상품 업데이트 중 예기치 않은 오류:', error);
-    return null;
+    console.error('Unexpected error deleting product:', error);
+    return false;
   }
 };
