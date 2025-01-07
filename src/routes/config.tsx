@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
-import Home from '@/pages/Home';
-import Cart from '@/pages/Cart';
-import ProductDetail from '@/pages/ProductDetail';
+import HomePage from '@/pages/HomePage';
+import Cart from '@/pages/CartPage';
+import ProductDetailPage from '@/pages/ProductDetailPage';
 import ProductRegisterPage from '@/pages/ProductRegisterPage';
 import MyPage from '@/pages/MyPage';
 import ProductEditPage from '@/pages/ProductEditPage';
@@ -12,9 +12,9 @@ export interface RouteConfig {
 }
 
 const routes: RouteConfig[] = [
-    { path: '/', element: <Home /> },
+    { path: '/', element: <HomePage /> },
     // { path: '/auth', element: <Auth /> },
-    { path: '/product/:id', element: <ProductDetail /> },
+    { path: '/product/:id', element: <ProductDetailPage /> },
     { path: '/cart', element: <Cart /> },
     { path: '/productregister', element: <ProductRegisterPage /> },
     { path: '/products/edit/:productId', element: <ProductEditPage /> },

@@ -1,4 +1,4 @@
-const Home = () => {
+const CartPage = () => {
     return (
         <div>
             <h2>카트트 페이지</h2>
@@ -7,4 +7,4 @@ const Home = () => {
     );
 };
 
-export default Home;
+export default CartPage;

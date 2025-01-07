@@ -108,8 +108,7 @@ export const createProduct = async (
  * 모든 상품 목록 가져오기
  */
 export const getProducts = async (): Promise<
-  Database['public']['Tables']['products']['Row'][] | null
-> => {
+  Database['public']['Tables']['products']['Row'][]> => {
   const { data, error } = await supabase
     .from('products')
     .select('*')
@@ -117,7 +116,7 @@ export const getProducts = async (): Promise<
 
   if (error) {
     console.error('상품 목록 가져오기 오류:', error.message);
-    return null;
+    throw new Error(error.message);
   }
 
   return data;

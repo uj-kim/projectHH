@@ -1,30 +1,27 @@
-// // src/pages/Home.tsx
-import { useEffect, useState } from 'react';
+// import { useEffect, useState } from 'react';
 // import { supabase } from '../lib/supabaseClient';
 // import { User } from '@supabase/supabase-js';
+import { useQuery } from '@tanstack/react-query';
 import useAuthStore from '@/stores/authStore';
 import { getProducts } from '@/api/products';
 import ProductCard from '@/components/ProductCard';
 import { Database } from '@/types/database.types';
 
-const Home = () => {
-    // const [user, setUser] = useState<User | null>(null);
+const HomePage: React.FC = () => {
     const user = useAuthStore((state) => state.user);
-    const [products, setProducts] = useState<Database['public']['Tables']['products']['Row'][]>([]);
-    const [errorMessage, setErrorMessage] = useState('');
 
-    //상품목록 가져오기
-    useEffect(() => {
-        const fetchProducts = async () => {
-            const data = await getProducts();
-            if (data) {
-                setProducts(data);
-            } else {
-                setErrorMessage('상품목록을 불러오지 못했습니다.');
-            }
-        };
-        fetchProducts();
-    }, []);
+    const {
+        data: products,
+        isLoading,
+        isError,
+        error,
+    } = useQuery<Database['public']['Tables']['products']['Row'][], Error>({
+        queryKey: ['products'], // 쿼리 키
+        queryFn: getProducts, // 쿼리 함수
+        staleTime: 5 * 60 * 1000, // 5분
+        gcTime: 30 * 60 * 1000, // 30분
+        refetchOnWindowFocus: false, // 창 포커스 시 재요청 비활성화
+    });
 
     // const fetchUser = async () => {
     //     const {
@@ -84,15 +81,25 @@ const Home = () => {
             </header>
 
             <main>
-                {errorMessage && <p className="text-red-500 mb-4">{errorMessage}</p>}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {products.map((product) => (
-                        <ProductCard key={product.product_id} product={product} />
-                    ))}
-                </div>
+                {/* 로딩 상태 */}
+                {isLoading && <p>로딩 중...</p>}
+
+                {/* 에러 상태 */}
+                {isError && <p className="text-red-500 mb-4">{error.message || '상품 목록을 불러오지 못했습니다.'}</p>}
+
+                {/* 성공 상태 */}
+                {!isLoading && !isError && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        {products && products.length > 0 ? (
+                            products.map((product) => <ProductCard key={product.product_id} product={product} />)
+                        ) : (
+                            <p>현재 판매 중인 상품이 없습니다.</p>
+                        )}
+                    </div>
+                )}
             </main>
         </div>
     );
 };
 
-export default Home;
+export default HomePage;
