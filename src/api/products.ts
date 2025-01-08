@@ -129,7 +129,7 @@ export const getProducts = async (): Promise<
  */
 export const getSellerProducts = async (
   sellerId: string
-): Promise<Database['public']['Tables']['products']['Row'][] | null> => {
+): Promise<Database['public']['Tables']['products']['Row'][]> => {
   const { data, error } = await supabase
     .from('products')
     .select('*')
@@ -139,7 +139,7 @@ export const getSellerProducts = async (
 
   if (error) {
     console.error('판매자 상품 목록 가져오기 오류:', error.message);
-    return null;
+    throw new Error(error.message);
   }
 
   return data;
@@ -198,8 +198,7 @@ export const updateProduct = async (
 };
 
 // **삭제하기 함수 추가**
-export const deleteProduct = async (productId: string): Promise<boolean> => {
-  try {
+export const deleteProduct = async (productId: string): Promise<void> => {
     const { error } = await supabase
       .from('products')
       .delete()
@@ -207,12 +206,6 @@ export const deleteProduct = async (productId: string): Promise<boolean> => {
 
     if (error) {
       console.error('Error deleting product:', error);
-      return false;
+      throw new Error(error.message);
     }
-
-    return true;
-  } catch (error) {
-    console.error('Unexpected error deleting product:', error);
-    return false;
-  }
 };

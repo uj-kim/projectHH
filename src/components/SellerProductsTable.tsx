@@ -1,79 +1,109 @@
 /* SellerProductsTable.tsx */
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useReactTable, ColumnDef, flexRender, getCoreRowModel } from '@tanstack/react-table';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { deleteProduct, getSellerProducts } from '@/api/products';
 import useAuthStore from '@/stores/authStore';
-import { useNavigate } from 'react-router-dom'; // React Router v6 사용 시
-import { Button } from './ui/button';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Database } from '@/types/database.types';
 
-type Product = {
-    product_id: string;
-    product_name: string;
-    price: number;
-    quantity: number;
-    created_at: string;
-};
+type Product = Database['public']['Tables']['products']['Row'];
+interface MutationContext {
+    previousProducts?: Product[];
+}
 
 export const SellerProductsTable: React.FC = () => {
     const user = useAuthStore((state) => state.user);
-    const [products, setProducts] = useState<Product[]>([]);
+    // const [products, setProducts] = useState<Product[]>([]);
     const [filter, setFilter] = useState('');
     const navigate = useNavigate(); // useNavigate 훅 초기화
+    const queryClient = useQueryClient();
     const [isDeleting, setIsDeleting] = useState<string | null>(null); // 현재 삭제 중인 상품 ID
 
-    useEffect(() => {
-        console.log('Fetching products for user:', user?.id);
+    // useEffect(() => {
+    //     console.log('Fetching products for user:', user?.id);
 
-        const fetchData = async () => {
-            if (!user?.id) return;
+    //     const fetchData = async () => {
+    //         if (!user?.id) return;
 
-            try {
-                const data = await getSellerProducts(user.id);
-                if (data) {
-                    const normalizedData = data.map((item) => ({
-                        ...item,
-                        created_at: item.created_at || '',
-                    }));
-                    setProducts(normalizedData);
-                } else {
-                    console.error('Failed to fetch products.');
-                }
-            } catch (error) {
-                console.error('Error fetching products:', error);
+    //         try {
+    //             const data = await getSellerProducts(user.id);
+    //             if (data) {
+    //                 const normalizedData = data.map((item) => ({
+    //                     ...item,
+    //                     created_at: item.created_at || '',
+    //                 }));
+    //                 setProducts(normalizedData);
+    //             } else {
+    //                 console.error('Failed to fetch products.');
+    //             }
+    //         } catch (error) {
+    //             console.error('Error fetching products:', error);
+    //         }
+    //     };
+
+    //     fetchData();
+    // }, [user?.id]);
+    // 현재 판매상품목록 조회
+    const { data: products } = useQuery<Product[], Error>({
+        queryKey: ['products', user?.id],
+        queryFn: () => getSellerProducts(user!.id),
+        enabled: !!user?.id,
+        staleTime: 5 * 60 * 1000,
+        gcTime: 30 * 60 * 1000,
+    });
+
+    //상품 삭제
+    const deleteMutation = useMutation<void, Error, string, MutationContext>({
+        mutationFn: deleteProduct,
+        onMutate: async (productId: string) => {
+            await queryClient.cancelQueries({ queryKey: ['products', user?.id], exact: true });
+
+            const previousProducts = queryClient.getQueryData<Product[]>(['products', user!.id]);
+
+            if (previousProducts) {
+                queryClient.setQueryData<Product[]>(
+                    ['products', user?.id],
+                    previousProducts.filter((product) => product.product_id !== productId)
+                );
             }
-        };
-
-        fetchData();
-    }, [user?.id]);
+            return { previousProducts };
+        },
+        onError: (err: Error, productId: string, context?: MutationContext) => {
+            if (context?.previousProducts) {
+                queryClient.setQueryData(['products', user?.id], context.previousProducts);
+            }
+            setIsDeleting(null);
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({
+                queryKey: ['products', user!.id],
+            });
+            setIsDeleting(null);
+        },
+    });
 
     // '수정' 버튼 핸들러를 useCallback으로 메모이제이션
     const handleEdit = useCallback(
         (productId: string) => {
-            navigate(`/products/edit/${productId}`); // 수정 페이지 경로에 맞게 조정
+            navigate(`/products/edit/${productId}`);
         },
         [navigate]
     );
     // '삭제'버튼 핸들러
-    const handleDelete = useCallback(async (productId: string) => {
-        const confirmDelete = window.confirm('정말 이 상품을 삭제하시겠습니까?');
-        if (!confirmDelete) return;
+    const handleDelete = useCallback(
+        (productId: string) => {
+            const confirmDelete = window.confirm('정말 이 상품을 삭제하시겠습니까?');
+            if (!confirmDelete) return;
 
-        setIsDeleting(productId);
-
-        const success = await deleteProduct(productId);
-        if (success) {
-            // toast.success('상품이 성공적으로 삭제되었습니다.');
-            console.log('상품이 성공적으로 삭제되었습니다.');
-            setProducts((prevProducts) => prevProducts.filter((product) => product.product_id !== productId));
-        } else {
-            // toast.error('상품 삭제에 실패했습니다. 다시 시도해주세요.');
-            console.log('상품 삭제에 실패했습니다. 다시 시도해주세요.');
-        }
-
-        setIsDeleting(null);
-    }, []);
+            setIsDeleting(productId);
+            deleteMutation.mutate(productId);
+        },
+        [deleteMutation]
+    );
 
     // Memoize columns to prevent re-creation on every render
     const columns: ColumnDef<Product>[] = useMemo(
@@ -109,9 +139,9 @@ export const SellerProductsTable: React.FC = () => {
                             variant="destructive"
                             size="sm"
                             onClick={() => handleDelete(row.original.product_id)}
-                            disabled={isDeleting === row.original.product_id}
+                            disabled={isDeleting === row.original.product_id || deleteMutation.isPending}
                         >
-                            {isDeleting === row.original.product_id ? '삭제 중...' : '삭제'}
+                            {isDeleting === row.original.product_id || deleteMutation.isPending ? '삭제 중...' : '삭제'}
                         </Button>
                     </div>
                 ),
@@ -119,17 +149,18 @@ export const SellerProductsTable: React.FC = () => {
                 size: 150,
             },
         ],
-        [handleEdit, handleDelete, isDeleting]
+        [handleEdit, handleDelete, isDeleting, deleteMutation.isPending]
     ); // handleEdit을 의존성 배열에 포함
 
     // Memoize data to prevent re-creation on every render
-    const data = useMemo(() => {
+    const filteredData = useMemo(() => {
+        if (!products) return [];
         return products.filter((product) => product.product_name.toLowerCase().includes(filter.toLowerCase()));
     }, [products, filter]);
 
     const table = useReactTable({
         columns,
-        data,
+        data: filteredData,
         getCoreRowModel: getCoreRowModel(),
     });
 
