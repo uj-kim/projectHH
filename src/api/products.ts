@@ -155,8 +155,7 @@ export const getSellerProducts = async (
  */
 export const getProductById = async (
   productId: string
-): Promise<Database['public']['Tables']['products']['Row'] | null> => {
-  try {
+): Promise<Database['public']['Tables']['products']['Row']> => {
     const { data, error } = await supabase
       .from('products')
       .select('*')
@@ -165,14 +164,10 @@ export const getProductById = async (
 
     if (error) {
       console.error(`상품 조회 오류 (${productId}):`, error.message);
-      return null;
+      throw new Error(error.message)
     }
-
+    
     return data;
-  } catch (error) {
-    console.error('상품 조회 중 예기치 않은 오류:', error);
-    return null;
-  }
 };
 
 /**

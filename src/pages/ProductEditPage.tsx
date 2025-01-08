@@ -1,87 +1,112 @@
 // src/pages/ProductEditPage.tsx
-
-import React, { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getProductById, updateProduct } from '@/api/products';
+import { getProductById, updateProduct, uploadImage } from '@/api/products';
 import { Database } from '@/types/database.types';
 import ProductForm, { ProductFormData } from '@/components/ProductForm';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useProductFormStore } from '@/stores/productStore';
 
 const ProductEditPage: React.FC = () => {
     const { productId } = useParams<{ productId: string }>();
-    const [initialData, setInitialData] = useState<Database['public']['Tables']['products']['Row'] | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string>('');
+    const queryClient = useQueryClient();
     const navigate = useNavigate();
 
+    const resetForm = useProductFormStore((state) => state.resetForm);
+    const initializeForm = useProductFormStore((state) => state.initializeForm);
+
+    //해당 상품 정보 불러오기
+    const {
+        data: product,
+        isLoading,
+        isError,
+        error,
+    } = useQuery<Database['public']['Tables']['products']['Row'], Error>({
+        queryKey: ['product', productId!],
+        queryFn: () => getProductById(productId!),
+        enabled: !!productId,
+    });
     useEffect(() => {
-        const fetchProduct = async () => {
-            if (!productId) {
-                setError('상품 ID가 없습니다.');
-                setLoading(false);
-                return;
-            }
-
-            const product = await getProductById(productId);
-            if (product) {
-                setInitialData(product);
-            } else {
-                setError('상품 정보를 불러오는 데 실패했습니다.');
-            }
-            setLoading(false);
-        };
-
-        fetchProduct();
-    }, [productId]);
-
-    const handleUpdate = async (formData: ProductFormData) => {
-        if (!initialData) {
-            setError('상품 데이터가 없습니다.');
-            return;
+        if (product) {
+            initializeForm({
+                product_name: product.product_name,
+                price: product.price,
+                quantity: product.quantity,
+                description: product.description,
+                category_id: product.category_id ?? '',
+                image_url: product.image_url,
+            });
         }
+    }, [product, initializeForm]);
 
-        try {
-            const updatedProduct: Database['public']['Tables']['products']['Row'] | null = await updateProduct({
-                product_id: initialData.product_id,
+    // 상품 수정
+    const updateProductMutation = useMutation<
+        Database['public']['Tables']['products']['Row'],
+        Error,
+        { formData: ProductFormData; imageFile: File | null }
+    >({
+        mutationFn: async ({ formData, imageFile }) => {
+            let imageUrl = formData.image_url;
+
+            if (imageFile) {
+                const uploadedImageUrl = await uploadImage(imageFile);
+                if (!uploadedImageUrl) {
+                    throw new Error('이미지 업로드에 실패했습니다.');
+                }
+                imageUrl = uploadedImageUrl;
+            }
+
+            const updatedProduct = await updateProduct({
+                product_id: product!.product_id,
                 product_name: formData.product_name,
                 price: formData.price,
                 quantity: formData.quantity,
                 description: formData.description,
-                image_url: formData.image_url,
+                image_url: imageUrl,
                 category_id: formData.category_id,
-                // 필요한 경우 다른 필드도 업데이트할 수 있습니다.
             });
 
-            if (updatedProduct) {
-                // 성공 시 마이페이지로 이동
-                navigate('/mypage');
-            } else {
+            if (!updatedProduct) {
                 throw new Error('상품 정보를 업데이트하는 데 실패했습니다.');
             }
-        } catch (error) {
-            console.error('상품 업데이트 오류:', error);
-            throw error; // ProductForm에서 에러 메시지를 처리하도록 던짐
+
+            return updatedProduct;
+        },
+
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: ['products', data.seller_id] });
+            resetForm();
+            navigate('/mypage');
+        },
+        onError: (error: Error) => {
+            console.error('상품업데이트오류 : ', error);
+        },
+    });
+
+    const handleUpdate = async (formData: ProductFormData, imageFile: File | null) => {
+        if (!product) {
+            throw new Error('상품데이터가 없습니다.');
         }
+
+        await updateProductMutation.mutateAsync({ formData, imageFile });
     };
 
-    if (loading) return <div>로딩 중...</div>;
-    if (error) return <div className="text-red-500">{error}</div>;
-    if (!initialData) return <div>상품을 찾을 수 없습니다.</div>;
-
-    // 초기 폼 데이터 설정
-    const formInitialData: ProductFormData = {
-        product_name: initialData.product_name,
-        price: initialData.price,
-        quantity: initialData.quantity,
-        description: initialData.description,
-        image_url: initialData.image_url,
-        category_id: initialData.category_id ?? '',
-    };
+    if (isLoading) return <div>로딩 중...</div>;
+    if (isError) return <div className="text-red-500">{error.message}</div>;
+    if (!product) return <div>상품을 찾을 수 없습니다.</div>;
 
     return (
         <div className="p-6">
             <h1 className="text-2xl font-bold mb-4">상품 수정 페이지</h1>
             <ProductForm
-                initialProduct={formInitialData}
+                initialProduct={{
+                    product_name: product.product_name,
+                    price: product.price,
+                    quantity: product.quantity,
+                    description: product.description,
+                    image_url: product.image_url,
+                    category_id: product.category_id ?? '',
+                }}
                 onSubmit={handleUpdate}
                 formTitle="상품 수정"
                 isEditMode={true}

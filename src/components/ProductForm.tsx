@@ -1,5 +1,5 @@
 // src/components/ProductForm.tsx
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getCategories } from '@/api/products';
 import useAuthStore from '@/stores/authStore';
@@ -48,13 +48,15 @@ const ProductForm: React.FC<ProductFormProps> = ({
         setImageFile,
         selectedCategoryId,
         setSelectedCategoryId,
+        successMessage,
+        setSuccessMessage,
+        errorMessage,
+        setErrorMessage,
+        isSubmitting,
+        setIsSubmitting,
         resetForm,
         initializeForm,
     } = useProductFormStore();
-
-    const [successMessage, setSuccessMessage] = useState('');
-    const [errorMessage, setErrorMessage] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false); // 로딩 상태 추가
 
     const user = useAuthStore((state) => state.user);
 
@@ -99,25 +101,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
             setIsSubmitting(false);
             return;
         }
-
-        // let imageUrl: string | null = initialProduct?.image_url || '';
-
-        // // 이미지 업로드 (등록 모드에서만 필수)
-        // if (imageFile) {
-        //     try {
-        //         imageUrl = await uploadImage(imageFile);
-        //         if (!imageUrl) {
-        //             setErrorMessage('이미지 업로드에 실패했습니다.');
-        //             setIsSubmitting(false);
-        //             return;
-        //         }
-        //     } catch (error) {
-        //         console.error('이미지 업로드 오류:', error);
-        //         setErrorMessage('이미지 업로드에 실패했습니다.');
-        //         setIsSubmitting(false);
-        //         return;
-        //     }
-        // }
 
         const productData: ProductFormData = {
             product_name: productName,
