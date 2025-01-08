@@ -17,36 +17,11 @@ interface MutationContext {
 
 export const SellerProductsTable: React.FC = () => {
     const user = useAuthStore((state) => state.user);
-    // const [products, setProducts] = useState<Product[]>([]);
     const [filter, setFilter] = useState('');
     const navigate = useNavigate(); // useNavigate 훅 초기화
     const queryClient = useQueryClient();
     const [isDeleting, setIsDeleting] = useState<string | null>(null); // 현재 삭제 중인 상품 ID
 
-    // useEffect(() => {
-    //     console.log('Fetching products for user:', user?.id);
-
-    //     const fetchData = async () => {
-    //         if (!user?.id) return;
-
-    //         try {
-    //             const data = await getSellerProducts(user.id);
-    //             if (data) {
-    //                 const normalizedData = data.map((item) => ({
-    //                     ...item,
-    //                     created_at: item.created_at || '',
-    //                 }));
-    //                 setProducts(normalizedData);
-    //             } else {
-    //                 console.error('Failed to fetch products.');
-    //             }
-    //         } catch (error) {
-    //             console.error('Error fetching products:', error);
-    //         }
-    //     };
-
-    //     fetchData();
-    // }, [user?.id]);
     // 현재 판매상품목록 조회
     const { data: products } = useQuery<Product[], Error>({
         queryKey: ['products', user?.id],
@@ -150,7 +125,7 @@ export const SellerProductsTable: React.FC = () => {
             },
         ],
         [handleEdit, handleDelete, isDeleting, deleteMutation.isPending]
-    ); // handleEdit을 의존성 배열에 포함
+    );
 
     // Memoize data to prevent re-creation on every render
     const filteredData = useMemo(() => {

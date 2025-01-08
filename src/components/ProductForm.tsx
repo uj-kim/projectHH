@@ -1,9 +1,9 @@
 // src/components/ProductForm.tsx
-
-import React, { useState, useEffect } from 'react';
-import { getCategories, uploadImage } from '@/api/products';
+import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { getCategories } from '@/api/products';
 import useAuthStore from '@/stores/authStore';
-// import { Database } from '@/types/database.types';
+import { useProductFormStore } from '@/stores/productStore';
 
 type Category = {
     category_id: string;
@@ -24,7 +24,7 @@ export type ProductFormData = {
 
 type ProductFormProps = {
     initialProduct?: ProductFormData;
-    onSubmit: (data: ProductFormData) => Promise<void>;
+    onSubmit: (data: ProductFormData, imageFile: File | null) => Promise<void>;
     formTitle?: string;
     isEditMode?: boolean;
 };
@@ -35,35 +35,48 @@ const ProductForm: React.FC<ProductFormProps> = ({
     formTitle = '상품 등록',
     isEditMode = false,
 }) => {
-    const [productName, setProductName] = useState(initialProduct?.product_name || '');
-    const [price, setPrice] = useState(initialProduct?.price || 0);
-    const [quantity, setQuantity] = useState(initialProduct?.quantity || 0);
-    const [description, setDescription] = useState(initialProduct?.description || '');
-    const [imageFile, setImageFile] = useState<File | null>(null);
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [selectedCategoryId, setSelectedCategoryId] = useState(initialProduct?.category_id || '');
+    const {
+        productName,
+        setProductName,
+        price,
+        setPrice,
+        quantity,
+        setQuantity,
+        description,
+        setDescription,
+        imageFile,
+        setImageFile,
+        selectedCategoryId,
+        setSelectedCategoryId,
+        resetForm,
+        initializeForm,
+    } = useProductFormStore();
+
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false); // 로딩 상태 추가
 
     const user = useAuthStore((state) => state.user);
 
+    //카테고리 데이터 가져오기
+    const {
+        data: categories,
+        isPending: isCategoriesLoading,
+        isError: isCategoriesError,
+        error: categoriesError,
+    } = useQuery<Category[], Error>({
+        queryKey: ['categories'],
+        queryFn: getCategories,
+        staleTime: 5 * 60 * 1000,
+        gcTime: 30 * 60 * 1000,
+    });
+
+    // 초기화: 수정 모드일 경우 초기 데이터를 설정
     useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const data = await getCategories();
-                if (data) {
-                    setCategories(data);
-                } else {
-                    setErrorMessage('카테고리 데이터를 불러오지 못했습니다.');
-                }
-            } catch (error) {
-                console.error('카테고리 조회 오류:', error);
-                setErrorMessage('카테고리 데이터를 불러오지 못했습니다.');
-            }
-        };
-        fetchCategories();
-    }, []);
+        if (initialProduct && isEditMode) {
+            initializeForm(initialProduct);
+        }
+    }, [initialProduct, isEditMode, initializeForm]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -87,46 +100,41 @@ const ProductForm: React.FC<ProductFormProps> = ({
             return;
         }
 
-        let imageUrl: string | null = initialProduct?.image_url || '';
+        // let imageUrl: string | null = initialProduct?.image_url || '';
 
-        // 이미지 업로드 (등록 모드에서만 필수)
-        if (imageFile) {
-            try {
-                imageUrl = await uploadImage(imageFile);
-                if (!imageUrl) {
-                    setErrorMessage('이미지 업로드에 실패했습니다.');
-                    setIsSubmitting(false);
-                    return;
-                }
-            } catch (error) {
-                console.error('이미지 업로드 오류:', error);
-                setErrorMessage('이미지 업로드에 실패했습니다.');
-                setIsSubmitting(false);
-                return;
-            }
-        }
+        // // 이미지 업로드 (등록 모드에서만 필수)
+        // if (imageFile) {
+        //     try {
+        //         imageUrl = await uploadImage(imageFile);
+        //         if (!imageUrl) {
+        //             setErrorMessage('이미지 업로드에 실패했습니다.');
+        //             setIsSubmitting(false);
+        //             return;
+        //         }
+        //     } catch (error) {
+        //         console.error('이미지 업로드 오류:', error);
+        //         setErrorMessage('이미지 업로드에 실패했습니다.');
+        //         setIsSubmitting(false);
+        //         return;
+        //     }
+        // }
 
         const productData: ProductFormData = {
             product_name: productName,
             price,
             quantity,
             description,
-            image_url: imageUrl,
+            image_url: initialProduct?.image_url || '',
             category_id: selectedCategoryId,
         };
 
         try {
-            await onSubmit(productData);
+            await onSubmit(productData, imageFile);
             setSuccessMessage(isEditMode ? '상품이 성공적으로 수정되었습니다!' : '상품이 성공적으로 등록되었습니다!');
             setErrorMessage('');
             if (!isEditMode) {
                 // 등록 모드에서만 폼 초기화
-                setProductName('');
-                setPrice(0);
-                setQuantity(0);
-                setDescription('');
-                setImageFile(null);
-                setSelectedCategoryId('');
+                resetForm();
             }
         } catch (error) {
             console.error('폼 제출 오류:', error);
@@ -136,6 +144,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
             setIsSubmitting(false); // 제출 완료 시 로딩 상태 해제
         }
     };
+
+    if (isCategoriesLoading) return <div>카테고리 로딩 중...</div>;
+    if (isCategoriesError)
+        return <div className="text-red-500">카테고리 데이터를 불러오지 못했습니다: {categoriesError.message}</div>;
 
     return (
         <form
@@ -197,7 +209,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     className="w-full p-2 border border-gray-300 rounded-md"
                 >
                     <option value="">카테고리를 선택하세요</option>
-                    {categories.map((category) => (
+                    {categories!.map((category) => (
                         <option key={category.category_id} value={category.category_id}>
                             {category.category_name}
                         </option>

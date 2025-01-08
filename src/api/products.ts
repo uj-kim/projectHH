@@ -27,7 +27,7 @@ import { Database } from '@/types/database.types';
  * 카테고리 목록 가져오기
 */
 export const getCategories = async (): Promise<
- { category_id: string; category_name: string }[] | null> => {
+ { category_id: string; category_name: string }[]> => {
     console.log('getCategoreis 호출됨'); //ok
  const { data, error } = await supabase
    .from('categories')
@@ -39,7 +39,7 @@ export const getCategories = async (): Promise<
 
  if (error) {
    console.error('카테고리 조회 오류:', error.message);
-   return null;
+   throw new Error(error.message);
  }
 
  return data;
@@ -73,7 +73,7 @@ export const uploadImage = async (file: File): Promise<string | null> => {
 
   /**
  * 상품 등록 함수
- * @param product - 상품 데이터 (카테고리 ID 및 판매자 ID 제외)
+ * @param params - 상품 데이터 (카테고리 ID 및 판매자 ID 제외)
  * @param categoryName - 입력받은 카테고리 이름
  * @param userId - 현재 로그인한 사용자의 ID
  * @returns 등록된 상품 데이터 또는 null
@@ -81,10 +81,12 @@ export const uploadImage = async (file: File): Promise<string | null> => {
 
 
 export const createProduct = async (
-    product: Omit<Database['public']['Tables']['products']['Insert'], 'category_id' | 'seller_id'>&{image_url: string},
-    categoryId: string,
-    userId: string
-  ): Promise<Database['public']['Tables']['products']['Row'] | null> => {
+  params:{
+    product: Omit<Database['public']['Tables']['products']['Insert'], 'category_id' | 'seller_id' | 'product_id'>&{image_url: string};
+    categoryId: string;
+    userId: string;
+  }): Promise<Database['public']['Tables']['products']['Row'] | null> => {
+    const {product, categoryId, userId} = params;
     // 상품 등록
     const { data, error } = await supabase
       .from('products')
