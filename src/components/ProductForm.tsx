@@ -1,7 +1,7 @@
 // src/components/ProductForm.tsx
 import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getCategories } from '@/api/products';
+import { getCategories, uploadOptimizedImage } from '@/api/products';
 import useAuthStore from '@/stores/authStore';
 import { useProductFormStore } from '@/stores/productStore';
 
@@ -24,7 +24,7 @@ export type ProductFormData = {
 
 type ProductFormProps = {
     initialProduct?: ProductFormData;
-    onSubmit: (data: ProductFormData, imageFile: File | null) => Promise<void>;
+    onSubmit: (data: ProductFormData) => Promise<void>;
     formTitle?: string;
     isEditMode?: boolean;
 };
@@ -79,6 +79,48 @@ const ProductForm: React.FC<ProductFormProps> = ({
             initializeForm(initialProduct);
         }
     }, [initialProduct, isEditMode, initializeForm]);
+    /*
+    (e) => {
+        const file = e.target.files ? e.target.files[0] : null;
+        if (file) {
+            // 파일 크기 제한 (예: 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                setErrorMessage('이미지 파일 크기는 5MB를 초과할 수 없습니다.');
+                setImageFile(null);
+                return;
+            }
+
+            // 파일 형식 제한 (예: JPEG, PNG)
+            if (!['image/jpeg', 'image/png'].includes(file.type)) {
+                setErrorMessage('이미지 파일 형식은 JPEG 또는 PNG만 허용됩니다.');
+                setImageFile(null);
+                return;
+            }
+
+            setImageFile(file);
+        }
+    }
+*/
+    const handleImgFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files ? e.target.files[0] : null;
+        if (file) {
+            // 파일 크기 제한 (예: 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                setErrorMessage('이미지 파일 크기는 5MB를 초과할 수 없습니다.');
+                setImageFile(null);
+                return;
+            }
+            // 파일 형식 제한 (예: JPEG, PNG)
+            if (!['image/jpeg', 'image/png'].includes(file.type)) {
+                setErrorMessage('이미지 파일 형식은 JPEG 또는 PNG만 허용됩니다.');
+                setImageFile(null);
+                return;
+            }
+
+            setImageFile(file);
+            setErrorMessage('');
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -102,17 +144,32 @@ const ProductForm: React.FC<ProductFormProps> = ({
             return;
         }
 
+        let uploadedImgUrl = initialProduct?.image_url || '';
+        //이미지 최적화
+        if (imageFile) {
+            try {
+                if (!user.id) {
+                    throw new Error('사용자 ID가 없습니다.');
+                }
+                uploadedImgUrl = await uploadOptimizedImage(imageFile, user.id);
+            } catch {
+                setErrorMessage('이미지 업로드에 실패했습니다.');
+                setIsSubmitting(false);
+                return;
+            }
+        }
+
         const productData: ProductFormData = {
             product_name: productName,
             price,
             quantity,
             description,
-            image_url: initialProduct?.image_url || '',
+            image_url: uploadedImgUrl,
             category_id: selectedCategoryId,
         };
 
         try {
-            await onSubmit(productData, imageFile);
+            await onSubmit(productData);
             setSuccessMessage(isEditMode ? '상품이 성공적으로 수정되었습니다!' : '상품이 성공적으로 등록되었습니다!');
             setErrorMessage('');
             if (!isEditMode) {
@@ -205,26 +262,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                 <input
                     type="file"
                     accept="image/*"
-                    onChange={(e) => {
-                        const file = e.target.files ? e.target.files[0] : null;
-                        if (file) {
-                            // 파일 크기 제한 (예: 5MB)
-                            if (file.size > 5 * 1024 * 1024) {
-                                setErrorMessage('이미지 파일 크기는 5MB를 초과할 수 없습니다.');
-                                setImageFile(null);
-                                return;
-                            }
-
-                            // 파일 형식 제한 (예: JPEG, PNG)
-                            if (!['image/jpeg', 'image/png'].includes(file.type)) {
-                                setErrorMessage('이미지 파일 형식은 JPEG 또는 PNG만 허용됩니다.');
-                                setImageFile(null);
-                                return;
-                            }
-
-                            setImageFile(file);
-                        }
-                    }}
+                    onChange={handleImgFileChange}
                     {...(!isEditMode && { required: true })} // 등록 모드에서만 필수
                     className="w-full p-2 border border-gray-300 rounded-md"
                 />

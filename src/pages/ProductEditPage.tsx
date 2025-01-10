@@ -1,7 +1,7 @@
 // src/pages/ProductEditPage.tsx
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getProductById, updateProduct, uploadImage } from '@/api/products';
+import { getProductById, updateProduct } from '@/api/products';
 import { Database } from '@/types/database.types';
 import ProductForm, { ProductFormData } from '@/components/ProductForm';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -40,29 +40,15 @@ const ProductEditPage: React.FC = () => {
     }, [product, initializeForm]);
 
     // 상품 수정
-    const updateProductMutation = useMutation<
-        Database['public']['Tables']['products']['Row'],
-        Error,
-        { formData: ProductFormData; imageFile: File | null }
-    >({
-        mutationFn: async ({ formData, imageFile }) => {
-            let imageUrl = formData.image_url;
-
-            if (imageFile) {
-                const uploadedImageUrl = await uploadImage(imageFile);
-                if (!uploadedImageUrl) {
-                    throw new Error('이미지 업로드에 실패했습니다.');
-                }
-                imageUrl = uploadedImageUrl;
-            }
-
+    const updateProductMutation = useMutation<Database['public']['Tables']['products']['Row'], Error, ProductFormData>({
+        mutationFn: async (formData) => {
             const updatedProduct = await updateProduct({
                 product_id: product!.product_id,
                 product_name: formData.product_name,
                 price: formData.price,
                 quantity: formData.quantity,
                 description: formData.description,
-                image_url: imageUrl,
+                image_url: formData.image_url,
                 category_id: formData.category_id,
             });
 
@@ -83,12 +69,12 @@ const ProductEditPage: React.FC = () => {
         },
     });
 
-    const handleUpdate = async (formData: ProductFormData, imageFile: File | null) => {
+    const handleUpdate = async (formData: ProductFormData) => {
         if (!product) {
             throw new Error('상품데이터가 없습니다.');
         }
 
-        await updateProductMutation.mutateAsync({ formData, imageFile });
+        await updateProductMutation.mutateAsync(formData);
     };
 
     if (isLoading) return <div>로딩 중...</div>;

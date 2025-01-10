@@ -1,27 +1,6 @@
 import { supabase } from '@/lib/supabaseClient';
-//import { Product } from '@/types';
 import { Database } from '@/types/database.types';
-
-// interface CreateProductInput {
-//     seller_id: string;
-//     product_name: string;
-//     price: number;
-//     quantity: number;
-//     description: string;
-//     category_id: string;
-//     image_url?: string | null;
-// }
-
-// export const createProduct = async (product: CreateProductInput): Promise<Product> => {
-//     const { data, error } = await supabase.from('products').insert(product).select().returns<Product>();
-
-//     if (error) {
-//         throw new Error(error.message);
-//     }
-
-//     return data;
-//     //as는 조심해서 사용!
-// };
+import imageCompression from 'browser-image-compression';
 
 /**
  * 카테고리 목록 가져오기
@@ -46,30 +25,51 @@ export const getCategories = async (): Promise<
 };
 
 /**
- * 이미지 업로드 함수
+ * 이미지 업로드 및 최적화 함수
  * @param file - 업로드할 이미지 파일
- * @returns 업로드된 이미지의 URL 또는 null
+ * @param userId - 현재 로그인한 사용자의 ID
+ * @returns 업로드된 이미지의 URL
+ * @throws 이미지 업로드 또는 최적화 실패 시 에러
  */
-export const uploadImage = async (file: File): Promise<string | null> => {
-    const fileName = `products/${Date.now()}_${file.name}`; // 고유 파일 이름 생성
-    const { data, error } = await supabase.storage
-      .from('product-images') // 스토리지 버킷 이름
-      .upload(fileName, file);
-  
-    if (error) {
-      console.error('이미지 업로드 오류:', error.message);
-      return null;
-    }
-    console.log('업로드데이터', data)
-  
-    // Public URL 생성
-    const { data: publicUrlData } = supabase.storage
-      .from('product-images')
-      .getPublicUrl(fileName);
-  
-    return publicUrlData?.publicUrl || null;
-  };
-  /**
+
+export const uploadOptimizedImage = async (file: File, userId: string): Promise<string> => {
+      // 이미지 압축 및 WebP 변환 옵션 설정
+      const options = {
+          maxSizeMB: 1, // 최대 파일 크기 1MB
+          maxWidthOrHeight: 1920, // 최대 너비 또는 높이 1920px
+          useWebWorker: true,
+          fileType: 'image/webp',
+      };
+
+      // 이미지 압축 및 변환
+      const compressedFile = await imageCompression(file, options);
+
+      // 고유 파일 이름 생성
+      const fileName = `products/${userId}/${Date.now()}_${compressedFile.name}`;
+
+      // Supabase Storage에 이미지 업로드
+      const { data, error } = await supabase.storage
+          .from('product-images') // 스토리지 버킷 이름
+          .upload(fileName, compressedFile, {
+              cacheControl: '3600',
+              upsert: false,
+              contentType: 'image/webp', // WebP 형식 지정
+          });
+
+      if (error) {
+          throw new Error(error.message);
+      }
+      console.log('업로드 데이터: ',data);
+
+      // 업로드된 이미지의 공개 URL 가져오기
+      const { data: publicUrlData } = supabase
+          .storage
+          .from('product-images')
+          .getPublicUrl(fileName);
+
+      return publicUrlData.publicUrl;
+};
+
 
   /**
  * 상품 등록 함수
