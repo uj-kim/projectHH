@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import HomePage from '@/pages/HomePage';
-import Cart from '@/pages/CartPage';
+import CartPage from '@/pages/CartPage';
 import ProductDetailPage from '@/pages/ProductDetailPage';
 import ProductRegisterPage from '@/pages/ProductRegisterPage';
 import MyPage from '@/pages/MyPage';
@@ -15,7 +15,7 @@ const routes: RouteConfig[] = [
     { path: '/', element: <HomePage /> },
     // { path: '/auth', element: <Auth /> },
     { path: '/product/:id', element: <ProductDetailPage /> },
-    { path: '/cart', element: <Cart /> },
+    { path: '/cart', element: <CartPage /> },
     { path: '/productregister', element: <ProductRegisterPage /> },
     { path: '/products/edit/:productId', element: <ProductEditPage /> },
     // { path: '/purchase', element: <Purchase />, protected: true },

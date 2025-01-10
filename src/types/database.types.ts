@@ -66,7 +66,7 @@ export type Database = {
           created_at: string | null
           delivery_address: string
           order_id: string
-          product_id: string
+          status: string | null
           total_price: number
         }
         Insert: {
@@ -74,7 +74,7 @@ export type Database = {
           created_at?: string | null
           delivery_address: string
           order_id?: string
-          product_id: string
+          status?: string | null
           total_price: number
         }
         Update: {
@@ -82,18 +82,10 @@ export type Database = {
           created_at?: string | null
           delivery_address?: string
           order_id?: string
-          product_id?: string
+          status?: string | null
           total_price?: number
         }
-        Relationships: [
-          {
-            foreignKeyName: "orders_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["product_id"]
-          },
-        ]
+        Relationships: []
       }
       payments: {
         Row: {
