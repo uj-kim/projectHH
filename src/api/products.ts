@@ -39,6 +39,7 @@ export const uploadOptimizedImage = async (file: File, userId: string): Promise<
           maxWidthOrHeight: 1920, // 최대 너비 또는 높이 1920px
           useWebWorker: true,
           fileType: 'image/webp',
+          initialQuality: 0.3
       };
 
       // 이미지 압축 및 변환
