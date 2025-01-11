@@ -104,14 +104,14 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const handleImgFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files ? e.target.files[0] : null;
         if (file) {
-            // 파일 크기 제한 (예: 5MB)
+            // 파일 크기 제한 (5MB)
             if (file.size > 5 * 1024 * 1024) {
                 setErrorMessage('이미지 파일 크기는 5MB를 초과할 수 없습니다.');
                 setImageFile(null);
                 return;
             }
             // 파일 형식 제한 (예: JPEG, PNG)
-            if (!['image/jpeg', 'image/png'].includes(file.type)) {
+            if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
                 setErrorMessage('이미지 파일 형식은 JPEG 또는 PNG만 허용됩니다.');
                 setImageFile(null);
                 return;
