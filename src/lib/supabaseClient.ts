@@ -10,4 +10,9 @@ if (!supabaseUrl || !supabaseKey) {
     throw new Error('Supabase 환경 변수가 설정되지 않았습니다.');
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseKey);
+export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
+    auth: {
+        persistSession: true,
+        detectSessionInUrl: true,
+    }
+});

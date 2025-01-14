@@ -3,7 +3,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { getProductById } from '@/api/products';
 import { Database } from '@/types/database.types';
-import ProductDetail from '@/components/ProductDetail';
+import ProductDetail from '@/components/products/ProductDetail';
 import { useQuery } from '@tanstack/react-query';
 
 const ProductDetailPage: React.FC = () => {

@@ -3,16 +3,18 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createProduct } from '@/api/products';
-import ProductForm, { ProductFormData } from '@/components/ProductForm';
+import ProductForm, { ProductFormData } from '@/components/products/ProductForm';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import useAuthStore from '@/stores/authStore';
+// import useAuthStore from '@/stores/authStore';
+import { useAuth } from '@/hooks/useAuth';
 import { useProductFormStore } from '@/stores/productStore';
 import { Database } from '@/types/database.types';
 
 const ProductRegisterPage: React.FC = () => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
-    const user = useAuthStore((state) => state.user);
+    // const user = useAuthStore((state) => state.user);
+    const { data: user } = useAuth();
     const resetForm = useProductFormStore((state) => state.resetForm);
 
     type CreateProductVariables = {

@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getProductById, updateProduct } from '@/api/products';
 import { Database } from '@/types/database.types';
-import ProductForm, { ProductFormData } from '@/components/ProductForm';
+import ProductForm, { ProductFormData } from '@/components/products/ProductForm';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useProductFormStore } from '@/stores/productStore';
 

@@ -1,9 +1,11 @@
 // src/components/ProductForm.tsx
-import { useEffect } from 'react';
+
+import React, { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getCategories, uploadOptimizedImage } from '@/api/products';
-import useAuthStore from '@/stores/authStore';
+import { useAuth } from '@/hooks/useAuth'; // React Query 기반 인증 훅
 import { useProductFormStore } from '@/stores/productStore';
+// import { toast } from 'react-toastify';
 
 type Category = {
     category_id: string;
@@ -58,19 +60,19 @@ const ProductForm: React.FC<ProductFormProps> = ({
         initializeForm,
     } = useProductFormStore();
 
-    const user = useAuthStore((state) => state.user);
+    const { data: user, isLoading: isAuthLoading, isError: isAuthError, error: authError } = useAuth();
 
     //카테고리 데이터 가져오기
     const {
         data: categories,
-        isPending: isCategoriesLoading,
+        isLoading: isCategoriesLoading,
         isError: isCategoriesError,
         error: categoriesError,
     } = useQuery<Category[], Error>({
         queryKey: ['categories'],
         queryFn: getCategories,
-        staleTime: 5 * 60 * 1000,
-        gcTime: 30 * 60 * 1000,
+        staleTime: 5 * 60 * 1000, // 5분
+        gcTime: 30 * 60 * 1000, // 30분
     });
 
     // 초기화: 수정 모드일 경우 초기 데이터를 설정
@@ -79,28 +81,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
             initializeForm(initialProduct);
         }
     }, [initialProduct, isEditMode, initializeForm]);
-    /*
-    (e) => {
-        const file = e.target.files ? e.target.files[0] : null;
-        if (file) {
-            // 파일 크기 제한 (예: 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                setErrorMessage('이미지 파일 크기는 5MB를 초과할 수 없습니다.');
-                setImageFile(null);
-                return;
-            }
 
-            // 파일 형식 제한 (예: JPEG, PNG)
-            if (!['image/jpeg', 'image/png'].includes(file.type)) {
-                setErrorMessage('이미지 파일 형식은 JPEG 또는 PNG만 허용됩니다.');
-                setImageFile(null);
-                return;
-            }
-
-            setImageFile(file);
-        }
-    }
-*/
     const handleImgFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files ? e.target.files[0] : null;
         if (file) {
@@ -112,7 +93,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
             }
             // 파일 형식 제한 (예: JPEG, PNG)
             if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-                setErrorMessage('이미지 파일 형식은 JPEG 또는 PNG만 허용됩니다.');
+                setErrorMessage('이미지 파일 형식은 JPEG, PNG 또는 WEBP만 허용됩니다.');
                 setImageFile(null);
                 return;
             }
@@ -125,6 +106,18 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true); // 제출 시작 시 로딩 상태 설정
+
+        if (isAuthLoading) {
+            setErrorMessage('인증 상태를 확인 중입니다.');
+            setIsSubmitting(false);
+            return;
+        }
+
+        if (isAuthError) {
+            setErrorMessage(`인증 오류: ${authError?.message}`);
+            setIsSubmitting(false);
+            return;
+        }
 
         if (!user) {
             setErrorMessage('로그인한 사용자 정보가 없습니다.');
@@ -185,9 +178,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
         }
     };
 
-    if (isCategoriesLoading) return <div>카테고리 로딩 중...</div>;
+    if (isCategoriesLoading || isAuthLoading) return <div>카테고리 및 인증 상태를 로딩 중...</div>;
     if (isCategoriesError)
         return <div className="text-red-500">카테고리 데이터를 불러오지 못했습니다: {categoriesError.message}</div>;
+    if (isAuthError) return <div className="text-red-500">인증 오류: {authError?.message}</div>;
 
     return (
         <form

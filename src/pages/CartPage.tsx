@@ -1,15 +1,23 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getCartItems, removeCartItem, updateCartItemQuantity } from '@/api/cart';
-import useAuthStore from '@/stores/authStore';
+// import useAuthStore from '@/stores/authStore';
+import { useAuth } from '@/hooks/useAuth';
 import CartItem from '@/components/CartItem';
 import { Database } from '@/types/database.types';
 import { toast } from 'react-toastify';
 
+// interface MutationContext {
+//     previousCartItems?: (Database['public']['Tables']['order_products']['Row'] & {
+//         product: Database['public']['Tables']['products']['Row'];
+//     })[];
+// }
+
 const CartPage: React.FC = () => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
-    const user = useAuthStore((state) => state.user);
+    // const user = useAuthStore((state) => state.user);
+    const { data: user } = useAuth();
 
     const {
         data: cartItems,
@@ -100,7 +108,7 @@ const CartPage: React.FC = () => {
                             <div className="mt-6 flex justify-between items-center">
                                 <p className="text-xl font-semibold">총 금액: ₩{totalPrice?.toLocaleString()}</p>
                                 <button
-                                    onClick={() => navigate('/checkout')}
+                                    onClick={() => navigate('/purchase')}
                                     className="p-3 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
                                 >
                                     결제하기

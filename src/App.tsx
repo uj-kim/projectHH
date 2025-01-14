@@ -1,8 +1,10 @@
+// src/App.tsx
+
 import './App.css';
 import AppRoutes from '@/routes/AppRoutes';
 import { useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import useAuthStore from '@/stores/authStore';
+// import useAuthStore from '@/stores/authStore';
 import { QueryClient, QueryClientProvider, QueryCache } from '@tanstack/react-query';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -24,44 +26,59 @@ const queryClient = new QueryClient({
 });
 
 function App() {
-    const setUser = useAuthStore((state) => state.setUser);
+    // const setUser = useAuthStore((state) => state.setUser);
+    // const initializeProfile = useAuthStore((state) => state.initializeProfile);
 
     useEffect(() => {
-        // const session = supabase.auth.getSession();
-        // session.then(({ data: { session } }) => {
-        //     setUser(session?.user ?? null);
-        // });
-        // const { subscription } = supabase.auth.onAuthStateChange((event, session) => {
-        //     setUser(session?.user ?? null);
-        // });
+        // console.log('렌더링');
+        // const fetchSessionAndInitialize = async () => {
+        //     try {
+        //         const { data, error } = await supabase.auth.getSession();
+        //         if (error) {
+        //             console.log('Error fetching session:', error.message);
+        //             setUser(null);
+        //             return;
+        //         }
 
-        // return () => {
-        //     subscription?.unsubscribe();
+        //         const user = data.session?.user ?? null;
+        //         console.log('Fetched user:', user);
+        //         setUser(user);
+
+        //         if (user) {
+        //             await initializeProfile();
+        //         }
+        //     } catch (err) {
+        //         console.error('Unexpected error fetching session:', err);
+        //         setUser(null);
+        //     }
         // };
-        const fetchSession = async () => {
-            const { data, error } = await supabase.auth.getSession();
-            if (error) {
-                console.log('Error fetching session:', error.message);
-            } else {
-                setUser(data.session?.user ?? null);
+
+        // fetchSessionAndInitialize();
+
+        const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
+            //     const user = session?.user ?? null;
+            //     console.log(`Auth state changed: ${event}`, user);
+            //     setUser(user);
+            //     if (user) {
+            //         await initializeProfile();
+            //     }
+
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                queryClient.invalidateQueries({ queryKey: ['user'] });
+            } else if (event === 'SIGNED_OUT') {
+                queryClient.setQueryData(['user'], null);
             }
-        };
-
-        fetchSession();
-
-        const { data } = supabase.auth.onAuthStateChange((event, session) => {
-            setUser(session?.user ?? null);
         });
 
         return () => {
-            data?.subscription.unsubscribe();
+            authListener.subscription.unsubscribe();
         };
-    }, [setUser]);
+    }, []);
 
     return (
         <QueryClientProvider client={queryClient}>
             <div className="min-h-screen bg-gray-100">
-                <AppRoutes />;
+                <AppRoutes />
             </div>
             <ToastContainer
                 position="top-right"

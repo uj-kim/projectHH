@@ -4,7 +4,7 @@ import React from 'react';
 import { Database } from '@/types/database.types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { addToCart } from '@/api/cart';
-import useAuthStore from '@/stores/authStore';
+import { useAuth } from '@/hooks/useAuth'; // React Query 기반 인증 훅
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
@@ -15,16 +15,24 @@ interface ProductDetailProps {
 }
 
 const ProductDetail: React.FC<ProductDetailProps> = ({ product }) => {
-    const user = useAuthStore((state) => state.user); // 사용자 정보 가져오기
+    // React Query를 사용하여 인증된 사용자 정보 가져오기
+    const { data: user, isLoading: isAuthLoading, isError: isAuthError, error: authError } = useAuth();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
-    // useMutation 훅을 사용하여 addToCart API 호출 설정
+    // Mutation 훅을 사용하여 addToCart API 호출 설정
     const mutation = useMutation({
-        mutationFn: (quantity: number) => addToCart(user!.id, product.product_id, quantity),
+        mutationFn: (quantity: number) => {
+            if (!user) {
+                throw new Error('사용자가 인증되지 않았습니다.');
+            }
+            return addToCart(user.id, product.product_id, quantity);
+        },
         onSuccess: () => {
             // 캐시 무효화하여 장바구니 데이터를 다시 가져오도록 함
-            queryClient.invalidateQueries({ queryKey: ['cart', user?.id] });
+            if (user?.id) {
+                queryClient.invalidateQueries({ queryKey: ['cart', user.id] });
+            }
             toast.success('장바구니에 추가되었습니다!');
             navigate('/cart'); // 장바구니 페이지로 이동
         },
@@ -38,6 +46,16 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product }) => {
 
     // '장바구니에 추가' 버튼 클릭 핸들러
     const handleAddToCart = () => {
+        if (isAuthLoading) {
+            toast.info('인증 상태를 확인 중입니다.');
+            return;
+        }
+
+        if (isAuthError) {
+            toast.error(`인증 오류: ${authError?.message}`);
+            return;
+        }
+
         if (!user) {
             toast.error('로그인이 필요합니다.');
             navigate('/login');
@@ -51,6 +69,12 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product }) => {
 
         mutation.mutate(quantity);
     };
+
+    // 인증 로딩 중일 때 로딩 메시지 표시
+    if (isAuthLoading) return <div>인증 상태를 확인 중입니다...</div>;
+
+    // 인증 오류가 발생했을 때 오류 메시지 표시
+    if (isAuthError) return <div className="text-red-500">인증 오류: {authError?.message}</div>;
 
     return (
         <div className="flex flex-col md:flex-row gap-6">

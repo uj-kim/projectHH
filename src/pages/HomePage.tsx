@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
-import useAuthStore from '@/stores/authStore';
+// import useAuthStore from '@/stores/authStore';
+import { useAuth } from '@/hooks/useAuth';
 import { getProducts } from '@/api/products';
-import ProductCard from '@/components/ProductCard';
+import ProductCard from '@/components/products/ProductCard';
 import { Database } from '@/types/database.types';
 
 const HomePage: React.FC = () => {
-    const user = useAuthStore((state) => state.user);
-
+    // const user = useAuthStore((state) => state.user);
+    const { data: user } = useAuth();
     const {
         data: products,
         isLoading,
@@ -18,6 +19,7 @@ const HomePage: React.FC = () => {
         staleTime: 5 * 60 * 1000, // 5분
         gcTime: 30 * 60 * 1000, // 30분
         refetchOnWindowFocus: false, // 창 포커스 시 재요청 비활성화
+        enabled: true,
     });
 
     return (

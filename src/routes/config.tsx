@@ -5,10 +5,11 @@ import ProductDetailPage from '@/pages/ProductDetailPage';
 import ProductRegisterPage from '@/pages/ProductRegisterPage';
 import MyPage from '@/pages/MyPage';
 import ProductEditPage from '@/pages/ProductEditPage';
+import PaymentPage from '@/pages/PaymentPage';
 export interface RouteConfig {
     path: string; // 라우트 경로
     element: ReactNode; // 렌더링할 컴포넌트
-    protected?: false; // 인증 필요 여부
+    protected?: boolean; // 인증 필요 여부
 }
 
 const routes: RouteConfig[] = [
@@ -16,10 +17,10 @@ const routes: RouteConfig[] = [
     // { path: '/auth', element: <Auth /> },
     { path: '/product/:id', element: <ProductDetailPage /> },
     { path: '/cart', element: <CartPage /> },
-    { path: '/productregister', element: <ProductRegisterPage /> },
-    { path: '/products/edit/:productId', element: <ProductEditPage /> },
-    // { path: '/purchase', element: <Purchase />, protected: true },
-    { path: '/mypage', element: <MyPage /> },
+    { path: '/productregister', element: <ProductRegisterPage />, protected: true },
+    { path: '/products/edit/:productId', element: <ProductEditPage />, protected: true },
+    { path: '/purchase', element: <PaymentPage />, protected: true },
+    { path: '/mypage', element: <MyPage />, protected: true },
 ];
 
 export default routes;
