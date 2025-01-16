@@ -1,8 +1,9 @@
+// src/App.tsx
+
 import './App.css';
 import AppRoutes from '@/routes/AppRoutes';
 import { useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import useAuthStore from '@/stores/authStore';
 import { QueryClient, QueryClientProvider, QueryCache } from '@tanstack/react-query';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -24,44 +25,24 @@ const queryClient = new QueryClient({
 });
 
 function App() {
-    const setUser = useAuthStore((state) => state.setUser);
-
     useEffect(() => {
-        // const session = supabase.auth.getSession();
-        // session.then(({ data: { session } }) => {
-        //     setUser(session?.user ?? null);
-        // });
-        // const { subscription } = supabase.auth.onAuthStateChange((event, session) => {
-        //     setUser(session?.user ?? null);
-        // });
-
-        // return () => {
-        //     subscription?.unsubscribe();
-        // };
-        const fetchSession = async () => {
-            const { data, error } = await supabase.auth.getSession();
-            if (error) {
-                console.log('Error fetching session:', error.message);
-            } else {
-                setUser(data.session?.user ?? null);
+        const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                queryClient.invalidateQueries({ queryKey: ['user'] });
+            } else if (event === 'SIGNED_OUT') {
+                queryClient.setQueryData(['user'], null);
             }
-        };
-
-        fetchSession();
-
-        const { data } = supabase.auth.onAuthStateChange((event, session) => {
-            setUser(session?.user ?? null);
         });
 
         return () => {
-            data?.subscription.unsubscribe();
+            authListener.subscription.unsubscribe();
         };
-    }, [setUser]);
+    }, []);
 
     return (
         <QueryClientProvider client={queryClient}>
             <div className="min-h-screen bg-gray-100">
-                <AppRoutes />;
+                <AppRoutes />
             </div>
             <ToastContainer
                 position="top-right"

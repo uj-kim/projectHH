@@ -1,22 +1,21 @@
+// src/routes/AppRoutes.tsx
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import routes from './config';
-import useAuthStore from '@/stores/authStore';
+import { useAuth } from '@/hooks/useAuth';
 import Layout from '@/components/Layout';
 import LoginModal from '@/components/LoginModal';
 import React, { useState, useEffect } from 'react';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-    // const isAuthenticated = true; // 인증 상태 로직
-    // return isAuthenticated ? children : <Navigate to="/auth" />;
-    const user = useAuthStore((state) => state.user);
-    // return user ? children : <Navigate to="/" />;
+    const { data: user, isLoading } = useAuth();
     const [showModal, setShowModal] = useState(false);
-
     useEffect(() => {
-        if (!user) {
+        //로직조건
+        if (!user && !isLoading) {
             setShowModal(true);
         }
-    }, [user]);
+    }, [user, isLoading]);
 
     const handleCloseModal = () => {
         setShowModal(false);

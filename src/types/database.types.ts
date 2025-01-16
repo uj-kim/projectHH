@@ -48,6 +48,13 @@ export type Database = {
             foreignKeyName: "order_products_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
+            referencedRelation: "order_details"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "order_products_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["order_id"]
           },
@@ -66,7 +73,7 @@ export type Database = {
           created_at: string | null
           delivery_address: string
           order_id: string
-          product_id: string
+          status: string | null
           total_price: number
         }
         Insert: {
@@ -74,7 +81,7 @@ export type Database = {
           created_at?: string | null
           delivery_address: string
           order_id?: string
-          product_id: string
+          status?: string | null
           total_price: number
         }
         Update: {
@@ -82,18 +89,10 @@ export type Database = {
           created_at?: string | null
           delivery_address?: string
           order_id?: string
-          product_id?: string
+          status?: string | null
           total_price?: number
         }
-        Relationships: [
-          {
-            foreignKeyName: "orders_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["product_id"]
-          },
-        ]
+        Relationships: []
       }
       payments: {
         Row: {
@@ -121,6 +120,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_details"
+            referencedColumns: ["order_id"]
+          },
           {
             foreignKeyName: "payments_order_id_fkey"
             columns: ["order_id"]
@@ -247,7 +253,36 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      order_details: {
+        Row: {
+          buyer_id: string | null
+          created_at: string | null
+          delivery_address: string | null
+          image_url: string | null
+          nickname: string | null
+          order_id: string | null
+          order_quantity: number | null
+          payment_created_at: string | null
+          payment_id: string | null
+          payment_method: string | null
+          payment_status: string | null
+          price: number | null
+          product_id: string | null
+          product_name: string | null
+          seller_id: string | null
+          status: string | null
+          total_price: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["product_id"]
+          },
+        ]
+      }
     }
     Functions: {
       [_ in never]: never

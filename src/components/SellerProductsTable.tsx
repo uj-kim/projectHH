@@ -4,11 +4,12 @@ import { useReactTable, ColumnDef, flexRender, getCoreRowModel } from '@tanstack
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { deleteProduct, getSellerProducts } from '@/api/products';
-import useAuthStore from '@/stores/authStore';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Database } from '@/types/database.types';
+import { useAuth } from '@/hooks/useAuth'; // React Query 기반 인증 훅 추가
+import { toast } from 'react-toastify';
 
 type Product = Database['public']['Tables']['products']['Row'];
 interface MutationContext {
@@ -16,47 +17,60 @@ interface MutationContext {
 }
 
 export const SellerProductsTable: React.FC = () => {
-    const user = useAuthStore((state) => state.user);
+    // React Query를 사용하여 인증된 사용자 정보 가져오기
+    const { data: user, isLoading: isAuthLoading, isError: isAuthError, error: authError } = useAuth();
     const [filter, setFilter] = useState('');
     const navigate = useNavigate(); // useNavigate 훅 초기화
     const queryClient = useQueryClient();
     const [isDeleting, setIsDeleting] = useState<string | null>(null); // 현재 삭제 중인 상품 ID
 
     // 현재 판매상품목록 조회
-    const { data: products } = useQuery<Product[], Error>({
+    const {
+        data: products,
+        isLoading: isProductsLoading,
+        isError: isProductsError,
+        error: productsError,
+    } = useQuery<Product[], Error>({
         queryKey: ['products', user?.id],
         queryFn: () => getSellerProducts(user!.id),
         enabled: !!user?.id,
-        staleTime: 5 * 60 * 1000,
-        gcTime: 30 * 60 * 1000,
+        staleTime: 5 * 60 * 1000, // 5분
+        gcTime: 30 * 60 * 1000, // 30분
     });
 
-    //상품 삭제
+    //상품 삭제 Mutation 훅
     const deleteMutation = useMutation<void, Error, string, MutationContext>({
         mutationFn: deleteProduct,
         onMutate: async (productId: string) => {
+            // 이전 쿼리 취소
             await queryClient.cancelQueries({ queryKey: ['products', user?.id], exact: true });
 
+            // 이전 데이터 백업
             const previousProducts = queryClient.getQueryData<Product[]>(['products', user!.id]);
 
+            // 낙관적 업데이트: 상품을 제거한 새로운 배열로 설정
             if (previousProducts) {
                 queryClient.setQueryData<Product[]>(
                     ['products', user?.id],
                     previousProducts.filter((product) => product.product_id !== productId)
                 );
             }
+
             return { previousProducts };
         },
         onError: (err: Error, productId: string, context?: MutationContext) => {
+            // 오류 발생 시 이전 데이터 복원
             if (context?.previousProducts) {
                 queryClient.setQueryData(['products', user?.id], context.previousProducts);
             }
             setIsDeleting(null);
+            toast.error(`상품 삭제에 실패했습니다: ${err.message}`);
         },
         onSettled: () => {
-            queryClient.invalidateQueries({
-                queryKey: ['products', user!.id],
-            });
+            // 쿼리 무효화하여 최신 데이터 가져오기
+            if (user?.id) {
+                queryClient.invalidateQueries({ queryKey: ['products', user.id] });
+            }
             setIsDeleting(null);
         },
     });
@@ -68,7 +82,8 @@ export const SellerProductsTable: React.FC = () => {
         },
         [navigate]
     );
-    // '삭제'버튼 핸들러
+
+    // '삭제' 버튼 핸들러
     const handleDelete = useCallback(
         (productId: string) => {
             const confirmDelete = window.confirm('정말 이 상품을 삭제하시겠습니까?');
@@ -139,6 +154,14 @@ export const SellerProductsTable: React.FC = () => {
         getCoreRowModel: getCoreRowModel(),
     });
 
+    // 로딩 및 오류 상태 처리
+    if (isAuthLoading || isProductsLoading) return <div>인증 및 상품 데이터를 로딩 중입니다...</div>;
+    if (isAuthError) return <div className="text-red-500">인증 오류: {authError?.message}</div>;
+    if (isProductsError)
+        return (
+            <div className="text-red-500">상품 데이터를 불러오는 중 오류가 발생했습니다: {productsError.message}</div>
+        );
+
     return (
         <div className="w-full">
             <div className="flex items-center py-4">
@@ -188,3 +211,5 @@ export const SellerProductsTable: React.FC = () => {
         </div>
     );
 };
+
+export default SellerProductsTable;
