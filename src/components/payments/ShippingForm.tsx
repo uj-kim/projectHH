@@ -1,13 +1,11 @@
 import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getDefaultAddress, updateDefaultAddress } from '@/api/profile';
-// import useAuthStore from '@/stores/authStore';
 import { useAuth } from '@/hooks/useAuth';
 import { usePaymentStore } from '@/stores/paymentStore';
 import { toast } from 'react-toastify';
 
 const ShippingForm: React.FC = () => {
-    // const user = useAuthStore((state) => state.user);
     const { data: user, isPending: isAuthLoading, isError: isAuthError, error: authError } = useAuth();
     const userId = user?.id || '';
 

@@ -1,8 +1,5 @@
-// import { useState } from 'react';
 import Modal from 'react-modal';
-// import { supabase } from '@/lib/supabaseClient';
 import { useSignIn } from '@/hooks/useSignIn';
-// import useAuthStore from '@/stores/authStore';
 
 Modal.setAppElement('#root');
 
@@ -11,18 +8,9 @@ interface LoginModalProps {
 }
 
 const LoginModal: React.FC<LoginModalProps> = ({ onClose }) => {
-    // const setUser = useAuthStore((state) => state.setUser);
     const signInMutation = useSignIn();
 
     const handleGoogleLogin = async () => {
-        // const { error } = await supabase.auth.signInWithOAuth({
-        //     provider: 'google',
-        // });
-        // if (error) {
-        //     console.error('Error logging in with Google:', error.message);
-        // }
-        // onClose();
-
         await signInMutation.mutateAsync();
         onClose();
     };

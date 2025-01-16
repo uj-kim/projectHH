@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import LoginModal from './LoginModal';
-// import useAuthStore from '@/stores/authStore';
-// import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useSignOut } from '@/hooks/useSignOut';
 import { toast } from 'react-toastify';
@@ -10,7 +8,6 @@ const Header: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { data: user, isPending } = useAuth();
     const signOutMutation = useSignOut();
-    // const user = useAuthStore((state) => state.user);
 
     const handleLoginClick = () => {
         setIsModalOpen(true);
@@ -21,8 +18,6 @@ const Header: React.FC = () => {
     };
 
     const handleLogout = async () => {
-        // const { error } = await supabase.auth.signOut();
-        // if (error) console.error('Error logging out:', error.message);
         await signOutMutation.mutateAsync();
         toast.success('로그아웃 되었습니다.');
     };

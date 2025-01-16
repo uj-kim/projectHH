@@ -1,12 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-// import useAuthStore from '@/stores/authStore';
 import { useAuth } from '@/hooks/useAuth';
 import { getProducts } from '@/api/products';
 import ProductCard from '@/components/products/ProductCard';
 import { Database } from '@/types/database.types';
 
 const HomePage: React.FC = () => {
-    // const user = useAuthStore((state) => state.user);
     const { data: user } = useAuth();
     const {
         data: products,

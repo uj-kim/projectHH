@@ -1,22 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getCartItems, removeCartItem, updateCartItemQuantity } from '@/api/cart';
-// import useAuthStore from '@/stores/authStore';
 import { useAuth } from '@/hooks/useAuth';
 import CartItem from '@/components/CartItem';
 import { Database } from '@/types/database.types';
 import { toast } from 'react-toastify';
 
-// interface MutationContext {
-//     previousCartItems?: (Database['public']['Tables']['order_products']['Row'] & {
-//         product: Database['public']['Tables']['products']['Row'];
-//     })[];
-// }
-
 const CartPage: React.FC = () => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
-    // const user = useAuthStore((state) => state.user);
     const { data: user } = useAuth();
 
     const {

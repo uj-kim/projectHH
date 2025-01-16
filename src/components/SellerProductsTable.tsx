@@ -4,7 +4,6 @@ import { useReactTable, ColumnDef, flexRender, getCoreRowModel } from '@tanstack
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { deleteProduct, getSellerProducts } from '@/api/products';
-// import useAuthStore from '@/stores/authStore';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -37,9 +36,6 @@ export const SellerProductsTable: React.FC = () => {
         enabled: !!user?.id,
         staleTime: 5 * 60 * 1000, // 5분
         gcTime: 30 * 60 * 1000, // 30분
-        // onError: (error: Error) => {
-        //     toast.error(`판매 상품 목록을 불러오는 중 오류가 발생했습니다: ${error.message}`);
-        // },
     });
 
     //상품 삭제 Mutation 훅

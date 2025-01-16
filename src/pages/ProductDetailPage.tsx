@@ -1,5 +1,4 @@
 // src/pages/ProductDetailPage.tsx
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { getProductById } from '@/api/products';
 import { Database } from '@/types/database.types';
@@ -9,8 +8,6 @@ import { useQuery } from '@tanstack/react-query';
 const ProductDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-
-    // Zustand 스토어에서 상태 및 함수 가져오기
 
     // 상품 상세 정보 가져오기 using useQuery
     const {

@@ -2,8 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { createOrder } from '@/api/payment';
-import { updatePaymentStatus } from '@/api/payment';
+import { createOrder, updatePaymentStatus } from '@/api/payment';
 import { getCartItems } from '@/api/cart';
 import ShippingForm from '@/components/payments/ShippingForm';
 import OrderSummary from '@/components/payments/OrderSummary';
@@ -11,7 +10,19 @@ import PaymentMethod from '@/components/payments/PaymentMethod';
 import { toast } from 'react-toastify';
 import { useAuth } from '@/hooks/useAuth';
 import { usePaymentStore } from '@/stores/paymentStore';
+import { Database } from '@/types/database.types';
 
+type Order = Database['public']['Tables']['orders']['Row'];
+
+type CreateOrderVariables = {
+    orderId: string;
+    orderData: {
+        buyer_id: string;
+        delivery_address: string;
+        total_price: number;
+        status: string;
+    };
+};
 const PaymentPage: React.FC = () => {
     const navigate = useNavigate();
     const { data: user } = useAuth();
@@ -32,8 +43,8 @@ const PaymentPage: React.FC = () => {
     });
 
     //주문 생성 mutation
-    const createOrderMutation = useMutation({
-        mutationFn: createOrder,
+    const createOrderMutation = useMutation<Order, Error, CreateOrderVariables>({
+        mutationFn: ({ orderId, orderData }) => createOrder(orderId, orderData),
         onSuccess: (order) => {
             updatePaymentStatusMutation.mutate({
                 order_id: order.order_id,
@@ -86,11 +97,16 @@ const PaymentPage: React.FC = () => {
         }
 
         try {
+            const orderId = cartData[0].order_id;
             //주문 생성
             await createOrderMutation.mutateAsync({
-                buyer_id: user.id,
-                delivery_address: shippingAddress,
-                total_price: totalPrice,
+                orderId,
+                orderData: {
+                    buyer_id: user.id,
+                    delivery_address: shippingAddress,
+                    total_price: totalPrice,
+                    status: 'Completed',
+                },
             });
         } catch (error) {
             console.log(error);
