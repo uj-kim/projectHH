@@ -68,8 +68,8 @@ const CartPage: React.FC = () => {
         return (
             <div className="p-6">
                 <h2 className="text-2xl font-semibold">로그인이 필요합니다.</h2>
-                <button onClick={() => navigate('/login')} className="mt-4 p-2 bg-blue-500 text-white rounded-md">
-                    로그인 페이지로 이동
+                <button onClick={() => navigate('/')} className="mt-4 p-2 bg-blue-500 text-white rounded-md">
+                    메인 페이지로 이동
                 </button>
             </div>
         );

@@ -21,4 +21,3 @@ export const useAuth = () => {
         refetchOnWindowFocus: false,
     });
 };
-// 
