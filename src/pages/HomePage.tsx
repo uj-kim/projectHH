@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-// import { useAuth } from '@/hooks/useAuth';
 import { getProducts } from '@/api/products';
 import { getAllCategories } from '@/api/categories';
 import ProductCard from '@/components/products/ProductCard';
@@ -38,37 +37,33 @@ const HomePage: React.FC = () => {
     });
 
     return (
-        <div className="p-4">
-            <header className="mb-6">
-                {/* <h2>홈 페이지</h2> */}
-                {/* {user ? (
-                    <h2 className="text-2xl">환영합니다, {user.user_metadata.name}님!</h2>
-                ) : (
-                    <h2 className="text-2xl">로그인이 필요합니다.</h2>
-                )} */}
-            </header>
+        <div className="p-4 min-h-screen">
+            <header className="mb-8"></header>
 
             <main>
                 <section className="mb-12">
                     {/* 카테고리 섹션 */}
-                    <h3 className="text-2xl font-bold text-center">Categories</h3>
-                    {/* 카테고리 로딩 */}
-                    {isCategoriesLoading && <p>카테고리 로딩중...</p>}
-                    {/* 카테고리 에러 */}
+                    <h3 className="text-2xl font-semibold mb-6 text-center text-gray-800">카 테 고 리</h3>
+
+                    {/* 로딩 상태 */}
+                    {isCategoriesLoading && <p className="text-center">카테고리 로딩 중...</p>}
+
+                    {/* 에러 상태 */}
                     {isCategoriesError && (
-                        <p className="text-red-500 mb-4">
+                        <p className="text-red-500 mb-4 text-center">
                             {categoriesError.message || '카테고리를 불러오지 못했습니다.'}
                         </p>
                     )}
-                    {/* 카테고리 불러오기 성공 */}
+
+                    {/* 성공 상태 */}
                     {!isCategoriesLoading && !isCategoriesError && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 justify-items-center">
                             {categories && categories.length > 0 ? (
                                 categories.map((category) => (
                                     <CategoryCard key={category.category_id} category={category} />
                                 ))
                             ) : (
-                                <p>현재 표시할 카테고리가 없습니다.</p>
+                                <p className="text-center">현재 표시할 카테고리가 없습니다.</p>
                             )}
                         </div>
                     )}
@@ -88,7 +83,7 @@ const HomePage: React.FC = () => {
 
                     {/* 성공 상태 */}
                     {!isProductsLoading && !isProductsError && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-6">
                             {products && products.length > 0 ? (
                                 products.map((product) => <ProductCard key={product.product_id} product={product} />)
                             ) : (

@@ -1,3 +1,4 @@
+// src/components/categories/CategoryCard.tsx
 import { Link } from 'react-router-dom';
 
 interface CategoryCardProps {
@@ -7,23 +8,22 @@ interface CategoryCardProps {
         category_image_url: string | null;
     };
 }
+
 const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
     return (
         <Link
             to={`/category/${category.category_id}`}
-            className="block overflow-hidden rounded-lg shadow-lg hover:shadow-xl trnasition-shadow"
+            className="flex flex-col items-center justify-center p-4 bg-white rounded-lg border-2 border-transparent transition-all duration-300 aspect-[3/4] shadow-none hover:shadow-xl"
         >
-            <div className="relative h-48">
+            <div className="flex justify-center items-center  w-24 h-24 md:w-32 md:h-32 lg:w-32 lg:h-32 mb-4">
                 <img
                     src={category.category_image_url || '/placeholder.png'}
                     alt={category.category_name}
-                    className="w-full h-full object-cover transform hover:scale-110 transition-transform duration-300"
+                    className="w-full h-full object-cover rounded-full"
                     loading="lazy"
                 />
-                <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-center py-2">
-                    <span className="font-semibold text-lg">{category.category_name}</span>
-                </div>
             </div>
+            <p className="text-sm sm:text-base font-semibold text-center text-gray-800">{category.category_name}</p>
         </Link>
     );
 };
