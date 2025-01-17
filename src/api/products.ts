@@ -5,9 +5,9 @@ import imageCompression from 'browser-image-compression';
 /**
  * 카테고리 목록 가져오기
 */
-export const getCategories = async (): Promise<
+export const getCategoryNames = async (): Promise<
  { category_id: string; category_name: string }[]> => {
-    console.log('getCategoreis 호출됨'); //ok
+    console.log('getCategoryNames 호출됨'); //ok
  const { data, error } = await supabase
    .from('categories')
    .select('category_id, category_name')

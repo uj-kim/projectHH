@@ -12,14 +12,17 @@ export type Database = {
       categories: {
         Row: {
           category_id: string
+          category_image_url: string | null
           category_name: string
         }
         Insert: {
           category_id?: string
+          category_image_url?: string | null
           category_name: string
         }
         Update: {
           category_id?: string
+          category_image_url?: string | null
           category_name?: string
         }
         Relationships: []

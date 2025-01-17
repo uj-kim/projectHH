@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getCategories, uploadOptimizedImage } from '@/api/products';
+import { getCategoryNames, uploadOptimizedImage } from '@/api/products';
 import { useAuth } from '@/hooks/useAuth'; // React Query 기반 인증 훅
 import { useProductFormStore } from '@/stores/productStore';
 // import { toast } from 'react-toastify';
@@ -70,7 +70,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
         error: categoriesError,
     } = useQuery<Category[], Error>({
         queryKey: ['categories'],
-        queryFn: getCategories,
+        queryFn: getCategoryNames,
         staleTime: 5 * 60 * 1000, // 5분
         gcTime: 30 * 60 * 1000, // 30분
     });
