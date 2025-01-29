@@ -58,7 +58,9 @@ const Header: React.FC = () => {
                 {/* 로그인/로그아웃 버튼 */}
                 {user ? (
                     <div className="flex items-center space-x-2">
-                        <span className="text-gray-700">{user.user_metadata.name || user.email}</span>
+                        <Link to="/mypage" className="relative">
+                            <span className="text-gray-700">{user.user_metadata.name || user.email}</span>
+                        </Link>
                         <button
                             onClick={handleLogout}
                             className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
