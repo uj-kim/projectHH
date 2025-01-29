@@ -6,7 +6,10 @@ import { User } from '@supabase/supabase-js';
 
 const fetchUser = async (): Promise<User | null> => {
     const { data, error } = await supabase.auth.getUser();
-    if (error) {
+    if (data.user == null) {
+        return data.user;
+    }
+    else if (error) {
         throw new Error(error.message);
     }
     return data.user;
