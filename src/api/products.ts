@@ -125,6 +125,24 @@ export const getProducts = async (): Promise<
   return data;
 };
 
+
+/**
+ * 특정 카테고리의 상품 가져오기
+ */
+export const getProductsByCategory = async (category_id: string) => {
+  const {data, error} = await supabase
+  .from('products')
+  .select('*')
+  .eq('category_id', category_id)
+  
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+
 /**
  * 판매자 상품 목록 가져오기
  * @param sellerId - 판매자 ID

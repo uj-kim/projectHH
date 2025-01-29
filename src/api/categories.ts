@@ -11,3 +11,17 @@ export const getAllCategories = async () => {
 
     return data;
 }
+
+//카테고리 페이지_ 해당 카테고리 이름 표시
+export const getCategoryById = async (category_id: string) => {
+    const {data, error} = await supabase
+    .from('categories')
+    .select('*')
+    .eq('category_id', category_id)
+    .single()
+
+    if(error) {
+        throw new Error(error.message);
+    }
+    return data;
+}

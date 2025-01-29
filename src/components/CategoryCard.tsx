@@ -12,7 +12,7 @@ interface CategoryCardProps {
 const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
     return (
         <Link
-            to={`/category/${category.category_id}`}
+            to={`/c/${category.category_id}`}
             className="flex flex-col items-center justify-center p-4 bg-white rounded-lg border-2 border-transparent transition-all duration-300 aspect-[3/4] shadow-none hover:shadow-xl"
         >
             <div className="flex justify-center items-center  w-24 h-24 md:w-32 md:h-32 lg:w-32 lg:h-32 mb-4">
