@@ -11,7 +11,6 @@ const SearchBar: React.FC = () => {
     const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (searchQuery.trim()) {
-            // 실제 검색 로직을 구현하세요. 예를 들어, 검색 페이지로 이동:
             navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
         }
     };
