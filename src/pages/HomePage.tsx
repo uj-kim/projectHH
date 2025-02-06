@@ -3,8 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { getProducts } from '@/api/products';
 import { getAllCategories } from '@/api/categories';
 import ProductCard from '@/components/products/ProductCard';
-import CategoryCard from '@/components/CategoryCard';
+import CategoryCard from '@/components/categories/CategoryCard';
 import CategorySkeleton from '@/components/categories/CategorySkeleton';
+import ProductCardSkeleton from '@/components/products/ProductCardSkeleton';
 import { Database } from '@/types/database.types';
 
 const HomePage: React.FC = () => {
@@ -30,11 +31,11 @@ const HomePage: React.FC = () => {
         isError: isProductsError,
         error: productsError,
     } = useQuery<Database['public']['Tables']['products']['Row'][], Error>({
-        queryKey: ['products'], // 쿼리 키
-        queryFn: getProducts, // 쿼리 함수
-        staleTime: 5 * 60 * 1000, // 5분
-        gcTime: 30 * 60 * 1000, // 30분
-        refetchOnWindowFocus: false, // 창 포커스 시 재요청 비활성화
+        queryKey: ['products'],
+        queryFn: getProducts,
+        staleTime: 5 * 60 * 1000,
+        gcTime: 30 * 60 * 1000,
+        refetchOnWindowFocus: false,
         enabled: true,
     });
 
@@ -47,14 +48,12 @@ const HomePage: React.FC = () => {
                     {/* 카테고리 섹션 */}
                     <h3 className="text-2xl font-semibold mb-6 text-center text-gray-800">카 테 고 리</h3>
 
-                    {/* 에러 상태 */}
                     {isCategoriesError && (
                         <p className="text-red-500 mb-4 text-center">
                             {categoriesError.message || '카테고리를 불러오지 못했습니다.'}
                         </p>
                     )}
 
-                    {/* 로딩 상태: CategorySkeleton을 그리드 형식으로 렌더링 */}
                     {isCategoriesLoading && (
                         <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 justify-items-center">
                             {Array.from({ length: 8 }).map((_, idx) => (
@@ -63,7 +62,6 @@ const HomePage: React.FC = () => {
                         </div>
                     )}
 
-                    {/* 성공 상태 */}
                     {!isCategoriesLoading && !isCategoriesError && (
                         <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 justify-items-center">
                             {categories && categories.length > 0 ? (
@@ -79,18 +77,20 @@ const HomePage: React.FC = () => {
                 {/* 전체 상품 섹션 */}
                 <section>
                     <h3 className="text-xl font-semibold mb-4">전체 상품 보기</h3>
-                    {/* 로딩 상태 */}
-                    {isProductsLoading && <p>로딩 중...</p>}
 
-                    {/* 에러 상태 */}
                     {isProductsError && (
                         <p className="text-red-500 mb-4">
                             {productsError.message || '상품 목록을 불러오지 못했습니다.'}
                         </p>
                     )}
 
-                    {/* 성공 상태 */}
-                    {!isProductsLoading && !isProductsError && (
+                    {isProductsLoading ? (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-6">
+                            {Array.from({ length: 8 }).map((_, idx) => (
+                                <ProductCardSkeleton key={idx} />
+                            ))}
+                        </div>
+                    ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-6">
                             {products && products.length > 0 ? (
                                 products.map((product) => <ProductCard key={product.product_id} product={product} />)
