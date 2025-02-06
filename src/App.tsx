@@ -2,6 +2,7 @@
 
 import './App.css';
 import AppRoutes from '@/routes/AppRoutes';
+import ProfileInitializer from '@/components/ProfileInitializer';
 import { useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { QueryClient, QueryClientProvider, QueryCache } from '@tanstack/react-query';
@@ -42,6 +43,8 @@ function App() {
     return (
         <QueryClientProvider client={queryClient}>
             <div className="min-h-screen">
+                {/* ProfileInitializer 컴포넌트를 추가하여, 로그인 후 프로필이 자동 생성되도록 합니다. */}
+                <ProfileInitializer />
                 <AppRoutes />
             </div>
             <ToastContainer
