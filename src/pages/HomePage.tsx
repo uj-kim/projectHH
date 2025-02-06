@@ -1,12 +1,14 @@
+// src/pages/HomePage.tsx
 import { useQuery } from '@tanstack/react-query';
 import { getProducts } from '@/api/products';
 import { getAllCategories } from '@/api/categories';
 import ProductCard from '@/components/products/ProductCard';
 import CategoryCard from '@/components/CategoryCard';
+import CategorySkeleton from '@/components/categories/CategorySkeleton';
 import { Database } from '@/types/database.types';
 
 const HomePage: React.FC = () => {
-    //카테고리 데이터 쿼리
+    // 카테고리 데이터 쿼리
     const {
         data: categories,
         isLoading: isCategoriesLoading,
@@ -21,7 +23,7 @@ const HomePage: React.FC = () => {
         enabled: true,
     });
 
-    //상품 데이터 쿼리
+    // 상품 데이터 쿼리
     const {
         data: products,
         isLoading: isProductsLoading,
@@ -45,14 +47,20 @@ const HomePage: React.FC = () => {
                     {/* 카테고리 섹션 */}
                     <h3 className="text-2xl font-semibold mb-6 text-center text-gray-800">카 테 고 리</h3>
 
-                    {/* 로딩 상태 */}
-                    {isCategoriesLoading && <p className="text-center">카테고리 로딩 중...</p>}
-
                     {/* 에러 상태 */}
                     {isCategoriesError && (
                         <p className="text-red-500 mb-4 text-center">
                             {categoriesError.message || '카테고리를 불러오지 못했습니다.'}
                         </p>
+                    )}
+
+                    {/* 로딩 상태: CategorySkeleton을 그리드 형식으로 렌더링 */}
+                    {isCategoriesLoading && (
+                        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 justify-items-center">
+                            {Array.from({ length: 8 }).map((_, idx) => (
+                                <CategorySkeleton key={idx} />
+                            ))}
+                        </div>
                     )}
 
                     {/* 성공 상태 */}
