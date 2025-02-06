@@ -1,5 +1,9 @@
+// src/components/CartItem.tsx
 import { Database } from '@/types/database.types';
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 
 interface CartItemProps {
     item: Database['public']['Tables']['order_products']['Row'] & {
@@ -11,33 +15,35 @@ interface CartItemProps {
 
 const CartItem: React.FC<CartItemProps> = ({ item, onRemove, onQuantityChange }) => {
     const { product, order_quantity } = item;
+    const [imageLoaded, setImageLoaded] = useState(false);
 
     return (
         <div className="flex flex-col md:flex-row items-center gap-6 border p-4 rounded-md">
-            {/* 상품 이미지 */}
+            {/* 상품 이미지 영역 */}
             <div className="w-full md:w-1/3">
                 <Link to={`/product/${product.product_id}`}>
-                    <img
-                        src={product.image_url || '/placeholder-image.png'}
-                        alt={product.product_name}
-                        className="w-full h-48 object-cover rounded-md shadow-md"
-                    />
+                    {/* wrapper div로 h-48, w-full 고정 */}
+                    <div className="relative w-full h-48">
+                        <img
+                            src={product.image_url || '/placeholder-image.png'}
+                            alt={product.product_name}
+                            onLoad={() => setImageLoaded(true)}
+                            style={{ display: imageLoaded ? 'block' : 'none' }}
+                            className="w-full h-full object-cover rounded-md shadow-md"
+                        />
+                        {!imageLoaded && <Skeleton className="w-full h-full rounded-md" />}
+                    </div>
                 </Link>
             </div>
 
-            {/* 상품 정보 */}
+            {/* 상품 정보 영역 */}
             <div className="w-full md:w-2/3 flex flex-col gap-2">
-                {/* 상품 이름 */}
                 <h2 className="text-xl font-semibold">
                     <Link to={`/product/${product.product_id}`} className="hover:underline">
                         {product.product_name}
                     </Link>
                 </h2>
-
-                {/* 가격 */}
                 <p className="text-lg font-bold text-green-600">₩{product.price.toLocaleString()}</p>
-
-                {/* 수량 조절 */}
                 <div className="flex items-center gap-2">
                     <label htmlFor={`quantity-${product.product_id}`} className="font-medium">
                         수량:
@@ -51,16 +57,12 @@ const CartItem: React.FC<CartItemProps> = ({ item, onRemove, onQuantityChange })
                         className="w-16 p-1 border rounded-md"
                     />
                 </div>
-
-                {/* 장바구니에서 제거 버튼 */}
                 <button
                     onClick={onRemove}
                     className="mt-2 p-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
                 >
                     장바구니에서 제거
                 </button>
-
-                {/* 상품 설명 */}
                 <p className="mt-2 text-gray-700">{product.description}</p>
             </div>
         </div>
