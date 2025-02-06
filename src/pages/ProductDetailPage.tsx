@@ -4,6 +4,7 @@ import { getProductById } from '@/api/products';
 import { Database } from '@/types/database.types';
 import ProductDetail from '@/components/products/ProductDetail';
 import { useQuery } from '@tanstack/react-query';
+import ReviewSection from '@/components/Review';
 
 const ProductDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -33,6 +34,9 @@ const ProductDetailPage: React.FC = () => {
                 ← 뒤로가기
             </button>
             <ProductDetail product={product} />
+            <div className="mt-12">
+                <ReviewSection productId={product.product_id} />
+            </div>
         </div>
     );
 };

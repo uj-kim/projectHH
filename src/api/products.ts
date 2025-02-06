@@ -213,6 +213,26 @@ export const updateProduct = async (
     return data;
 };
 
+
+/**
+ *  상품 검색_ 상품의 이름이나 설명을 기준으로 검색
+ * @param query //검색어
+ * @returns //반환값값
+ */
+export const searchProducts = async (query: string): Promise<Database['public']['Tables']['products']['Row'][]> => {
+  const {data, error} = await supabase
+  .from('products')
+  .select('*')
+  .or(`product_name.ilike.%${query}%, description.ilike.%${query}%`)
+
+  if(error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+  
+
 // **삭제하기 함수 추가**
 export const deleteProduct = async (productId: string): Promise<void> => {
     const { error } = await supabase
