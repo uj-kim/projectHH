@@ -1,5 +1,13 @@
 import {supabase} from '@/lib/supabaseClient';
 
+export type UserProfile = {
+    user_id: string;
+    email: string;
+    is_seller: boolean;
+    nickname: string;
+    address: string;
+  };
+
 /**
  * 사용자 프로필 생성
  * @param userId
@@ -25,6 +33,9 @@ export const createUserProfile = async(userId: string, email: string): Promise<v
 
     console.log('User profile created:', data);
 }
+
+
+
 
 /**
  * 사용자 기본 배송지 정보 가져오기
@@ -54,3 +65,4 @@ export const updateDefaultAddress = async(userId: string, newAddress: string): P
     }
     return data.address;
 }
+
