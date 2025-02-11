@@ -8,7 +8,8 @@ import { updateDefaultAddress } from '@/api/profile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useDeleteUser } from '@/hooks/useDeleteUser';
-import { supabase } from '@/lib/supabaseClient';
+import { useSignOut } from '@/hooks/useSignOut';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Mypage: React.FC = () => {
     const { data: userProfile, isLoading, isError, error, refetch } = useUserProfile();
@@ -44,16 +45,16 @@ const Mypage: React.FC = () => {
         }
     };
 
-    // useDeleteUserProfile 훅 사용
+    // 회원 탈퇴를 위한 훅
     const { mutate: deleteUserMutate } = useDeleteUser();
+    const { mutate: signOut } = useSignOut();
 
     const handleDeleteUserProfile = () => {
-        if (userProfile && window.confirm('정말로 회원 탈퇴(프로필 삭제)를 진행하시겠습니까?')) {
+        if (userProfile && window.confirm('정말로 탈퇴하시겠습니까?')) {
             deleteUserMutate(userProfile.user_id, {
                 onSuccess: async () => {
-                    alert('회원 탈퇴(프로필 삭제)가 완료되었습니다.');
-                    // 회원 탈퇴 후 로그아웃 처리
-                    await supabase.auth.signOut();
+                    alert('회원 탈퇴가 완료되었습니다.');
+                    signOut();
                     navigate('/');
                 },
                 onError: (error: Error) => {
@@ -80,7 +81,12 @@ const Mypage: React.FC = () => {
                     <div className="mb-4">
                         <p className="text-lg font-bold">이름</p>
                         <p className="text-lg font-medium">{userProfile.nickname || userProfile.email}</p>
-                        <p className="text-lg font-bold mt-4">기본 배송지</p>
+                        <div className="flex items-center justify-between mt-4">
+                            <p className="text-lg font-bold">기본 배송지</p>
+                            <Button onClick={handleAddressButtonClick} disabled={isUpdating}>
+                                {buttonText}
+                            </Button>
+                        </div>
                         <Input
                             value={addressValue}
                             onChange={(e) => setAddressValue(e.target.value)}
@@ -88,34 +94,33 @@ const Mypage: React.FC = () => {
                             placeholder="기본배송지가 등록되지 않았습니다."
                             className="mb-2"
                         />
-                        <Button onClick={handleAddressButtonClick} disabled={isUpdating}>
-                            {buttonText}
-                        </Button>
                     </div>
                 )}
 
                 {/* 판매자 전환 섹션 */}
                 <div className="flex items-center justify-between mb-4">
-                    <span className="text-xl font-medium">판매자로 전환하시겠습니까?</span>
+                    <span className="text-s font-medium">판매할 상품이 있으신가요?</span>
                     <Link to="/product/register">
                         <Button variant="default">상품등록</Button>
                     </Link>
                 </div>
             </div>
 
-            {/* 판매 내역 섹션 */}
-            <div className="mb-8">
-                <h2 className="text-2xl font-semibold mb-4">판매 내역</h2>
-                <SellerProductsTable />
-            </div>
+            {/* 탭을 이용한 판매 내역과 구매 내역 */}
+            <Tabs defaultValue="buy" className="mb-8">
+                <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="buy">구매 내역</TabsTrigger>
+                    <TabsTrigger value="sell">판매 내역</TabsTrigger>
+                </TabsList>
+                <TabsContent value="buy">
+                    <PurchaseHistoryTable />
+                </TabsContent>
+                <TabsContent value="sell">
+                    <SellerProductsTable />
+                </TabsContent>
+            </Tabs>
 
-            {/* 구매 내역 섹션 */}
-            <div>
-                <h2 className="text-2xl font-semibold mb-4">구매 내역</h2>
-                <PurchaseHistoryTable />
-            </div>
-
-            {/* 회원 탈퇴(프로필 삭제) 버튼 */}
+            {/* 회원 탈퇴 버튼 */}
             {userProfile?.user_id && (
                 <div className="mt-4">
                     <Button variant="destructive" onClick={handleDeleteUserProfile}>
