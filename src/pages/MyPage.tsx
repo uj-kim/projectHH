@@ -1,19 +1,21 @@
 // src/pages/Mypage.tsx
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import SellerProductsTable from '@/components/SellerProductsTable';
 import PurchaseHistoryTable from '@/components/PurchaseHistoryTable';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { updateDefaultAddress } from '@/api/profile';
-// shadcn/ui 컴포넌트 임포트 (프로젝트 경로에 맞게 조정)
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useDeleteUser } from '@/hooks/useDeleteUser';
+import { supabase } from '@/lib/supabaseClient';
 
 const Mypage: React.FC = () => {
     const { data: userProfile, isLoading, isError, error, refetch } = useUserProfile();
     const [addressValue, setAddressValue] = useState<string>('');
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [isUpdating, setIsUpdating] = useState<boolean>(false);
+    const navigate = useNavigate();
 
     // userProfile 로드 시 addressValue 초기화
     useEffect(() => {
@@ -24,10 +26,8 @@ const Mypage: React.FC = () => {
 
     const handleAddressButtonClick = async () => {
         if (!isEditing) {
-            // 편집 모드 시작
             setIsEditing(true);
         } else {
-            // 편집 모드에서 완료 버튼 클릭 시 업데이트 호출
             if (userProfile) {
                 try {
                     setIsUpdating(true);
@@ -39,9 +39,28 @@ const Mypage: React.FC = () => {
                 } catch (err) {
                     setIsUpdating(false);
                     console.error(err);
-                    // 에러 처리 로직 추가 가능
                 }
             }
+        }
+    };
+
+    // useDeleteUserProfile 훅 사용
+    const { mutate: deleteUserMutate } = useDeleteUser();
+
+    const handleDeleteUserProfile = () => {
+        if (userProfile && window.confirm('정말로 회원 탈퇴(프로필 삭제)를 진행하시겠습니까?')) {
+            deleteUserMutate(userProfile.user_id, {
+                onSuccess: async () => {
+                    alert('회원 탈퇴(프로필 삭제)가 완료되었습니다.');
+                    // 회원 탈퇴 후 로그아웃 처리
+                    await supabase.auth.signOut();
+                    navigate('/');
+                },
+                onError: (error: Error) => {
+                    alert('회원 탈퇴에 실패했습니다: ' + error.message);
+                    console.error('회원 탈퇴 실패:', error);
+                },
+            });
         }
     };
 
@@ -95,6 +114,15 @@ const Mypage: React.FC = () => {
                 <h2 className="text-2xl font-semibold mb-4">구매 내역</h2>
                 <PurchaseHistoryTable />
             </div>
+
+            {/* 회원 탈퇴(프로필 삭제) 버튼 */}
+            {userProfile?.user_id && (
+                <div className="mt-4">
+                    <Button variant="destructive" onClick={handleDeleteUserProfile}>
+                        회원 탈퇴
+                    </Button>
+                </div>
+            )}
         </div>
     );
 };
