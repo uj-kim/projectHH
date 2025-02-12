@@ -286,6 +286,26 @@ export type Database = {
           },
         ]
       }
+      reviews_with_nickname: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          nickname: string | null
+          product_id: string | null
+          rating: number | null
+          review_id: string | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["product_id"]
+          },
+        ]
+      }
     }
     Functions: {
       [_ in never]: never
