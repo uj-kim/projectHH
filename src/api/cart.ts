@@ -122,10 +122,35 @@ export const addToCart = async (
  * @param userId - 사용자의 ID
  * @returns 장바구니 항목 목록
  */
+// export const getCartItems = async (
+//   userId: string
+// ): Promise<(OrderProduct & { product: Product })[]> => {
+//   const cartOrder = await getOrCreateCartOrder(userId)
+
+//   const { data, error } = await supabase
+//     .from('order_products')
+//     .select(`
+//       *,
+//       product: products(*)
+//     `)
+//     .eq('order_id', cartOrder.order_id)
+
+//   if (error) {
+//     console.error('장바구니 항목 조회 오류:', error.message)
+//     throw new Error(error.message)
+//   }
+
+//   return data as (OrderProduct & { product: Product })[]
+// }
+
 export const getCartItems = async (
-  userId: string
+  userId: string,
+  page: number = 0,
+  pageSize: number = 10 // 한 페이지에 불러올 항목 수
 ): Promise<(OrderProduct & { product: Product })[]> => {
   const cartOrder = await getOrCreateCartOrder(userId)
+  const from = page * pageSize;
+  const to = from + pageSize - 1;
 
   const { data, error } = await supabase
     .from('order_products')
@@ -134,6 +159,7 @@ export const getCartItems = async (
       product: products(*)
     `)
     .eq('order_id', cartOrder.order_id)
+    .range(from, to)
 
   if (error) {
     console.error('장바구니 항목 조회 오류:', error.message)
