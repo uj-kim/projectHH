@@ -2,8 +2,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { ProductFormData } from '@/components/ProductForm';
-
+import { ProductFormData } from '@/components/products/ProductForm';
 interface ProductFormState {
     productName: string;
     price: number;
