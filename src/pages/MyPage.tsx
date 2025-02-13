@@ -120,12 +120,14 @@ const Mypage: React.FC = () => {
                 </TabsContent>
             </Tabs>
 
-            {/* 회원 탈퇴 버튼 */}
             {userProfile?.user_id && (
-                <div className="mt-4">
-                    <Button variant="destructive" onClick={handleDeleteUserProfile}>
-                        회원 탈퇴
-                    </Button>
+                <div className="mt-4 items-center">
+                    <span
+                        className="text-sm text-gray-500 hover:font-bold hover:underline cursor-pointer"
+                        onClick={handleDeleteUserProfile}
+                    >
+                        계정 삭제 및 회원 탈퇴
+                    </span>
                 </div>
             )}
         </div>
