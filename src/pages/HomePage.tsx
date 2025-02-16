@@ -4,8 +4,6 @@ import { getProducts } from '@/api/products';
 import { getAllCategories } from '@/api/categories';
 import ProductCard from '@/components/products/ProductCard';
 import CategoryCard from '@/components/categories/CategoryCard';
-import CategorySkeleton from '@/components/categories/CategorySkeleton';
-import ProductCardSkeleton from '@/components/products/ProductCardSkeleton';
 import { Database } from '@/types/database.types';
 
 const HomePage: React.FC = () => {
@@ -28,6 +26,7 @@ const HomePage: React.FC = () => {
     const {
         data: products,
         isLoading: isProductsLoading,
+        isSuccess: isProductsSuccess,
         isError: isProductsError,
         error: productsError,
     } = useQuery<Database['public']['Tables']['products']['Row'][], Error>({
@@ -54,14 +53,6 @@ const HomePage: React.FC = () => {
                         </p>
                     )}
 
-                    {isCategoriesLoading && (
-                        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 justify-items-center">
-                            {Array.from({ length: 8 }).map((_, idx) => (
-                                <CategorySkeleton key={idx} />
-                            ))}
-                        </div>
-                    )}
-
                     {!isCategoriesLoading && !isCategoriesError && (
                         <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 justify-items-center">
                             {categories && categories.length > 0 ? (
@@ -83,14 +74,7 @@ const HomePage: React.FC = () => {
                             {productsError.message || '상품 목록을 불러오지 못했습니다.'}
                         </p>
                     )}
-
-                    {isProductsLoading ? (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-6">
-                            {Array.from({ length: 8 }).map((_, idx) => (
-                                <ProductCardSkeleton key={idx} />
-                            ))}
-                        </div>
-                    ) : (
+                    {!isProductsLoading || isProductsSuccess ? (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-6">
                             {products && products.length > 0 ? (
                                 products.map((product) => <ProductCard key={product.product_id} product={product} />)
@@ -98,7 +82,7 @@ const HomePage: React.FC = () => {
                                 <p>현재 판매 중인 상품이 없습니다.</p>
                             )}
                         </div>
-                    )}
+                    ) : null}
                 </section>
             </main>
         </div>

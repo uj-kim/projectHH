@@ -21,7 +21,6 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
             className="flex flex-col items-center justify-center p-4 bg-white rounded-lg border-2 border-transparent transition-all duration-300 aspect-[3/4] shadow-none hover:shadow-xl"
         >
             <div className="relative flex justify-center items-center w-24 h-24 md:w-32 md:h-32 lg:w-32 lg:h-32 mb-4">
-                {/* 이미지가 로드되기 전까지 Skeleton을 보여줍니다. */}
                 {!imageLoaded && (
                     <div className="absolute inset-0 flex justify-center items-center">
                         <Skeleton
@@ -37,7 +36,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
                 <img
                     src={category.category_image_url || '/placeholder.png'}
                     alt={category.category_name}
-                    loading="lazy"
+                    loading="eager"
                     onLoad={() => setImageLoaded(true)}
                     className={`w-full h-full object-cover rounded-full transition-opacity duration-500 ${
                         imageLoaded ? 'opacity-100' : 'opacity-0'
