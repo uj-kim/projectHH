@@ -1,17 +1,17 @@
 // src/routes/AppRoutes.tsx
-
+import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import routes from './config';
-import { useAuth } from '@/hooks/useAuth';
 import Layout from '@/components/Layout';
 import LoginModal from '@/components/LoginModal';
-import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { useState, useEffect } from 'react';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     const { data: user, isLoading } = useAuth();
     const [showModal, setShowModal] = useState(false);
+
     useEffect(() => {
-        //로직조건
         if (!user && !isLoading) {
             setShowModal(true);
         }
@@ -20,6 +20,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     const handleCloseModal = () => {
         setShowModal(false);
     };
+
     return (
         <>
             {user ? children : null}
@@ -33,13 +34,17 @@ const AppRoutes = () => {
         <Router>
             <Routes>
                 <Route path="/" element={<Layout />}>
-                    {routes.map(({ path, element, protected: isProtected }, index) => (
-                        <Route
-                            key={index}
-                            path={path === '/' ? '/' : path.replace(/^\/+/, '')} // nested routes 경로 조정
-                            element={isProtected ? <ProtectedRoute>{element}</ProtectedRoute> : element}
-                        />
-                    ))}
+                    {routes.map(({ path, element, protected: isProtected }, index) => {
+                        const routeElement =
+                            path === '/' ? element : <Suspense fallback={<div>Loading...</div>}>{element}</Suspense>;
+                        return (
+                            <Route
+                                key={index}
+                                path={path === '/' ? '/' : path.replace(/^\/+/, '')}
+                                element={isProtected ? <ProtectedRoute>{routeElement}</ProtectedRoute> : routeElement}
+                            />
+                        );
+                    })}
                 </Route>
             </Routes>
         </Router>
