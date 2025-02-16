@@ -1,7 +1,8 @@
+// src/components/categories/CategoryCard.tsx
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
+import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
-import CategorySkeleton from './CategorySkeleton';
 
 interface CategoryCardProps {
     category: {
@@ -23,13 +24,20 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
                 {/* 이미지가 로드되기 전까지 Skeleton을 보여줍니다. */}
                 {!imageLoaded && (
                     <div className="absolute inset-0 flex justify-center items-center">
-                        <CategorySkeleton />
+                        <Skeleton
+                            circle={true}
+                            height={96} // w-24에 해당하는 픽셀 값 (예: 96px)
+                            width={96}
+                            duration={1.2}
+                            baseColor="#f0f0f0"
+                            highlightColor="#e0e0e0"
+                        />
                     </div>
                 )}
                 <img
                     src={category.category_image_url || '/placeholder.png'}
                     alt={category.category_name}
-                    loading="eager"
+                    loading="lazy"
                     onLoad={() => setImageLoaded(true)}
                     className={`w-full h-full object-cover rounded-full transition-opacity duration-500 ${
                         imageLoaded ? 'opacity-100' : 'opacity-0'
