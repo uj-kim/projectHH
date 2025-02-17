@@ -6,6 +6,7 @@ const CartPage = lazy(() => import('@/pages/CartPage'));
 const ProductDetailPage = lazy(() => import('@/pages/ProductDetailPage'));
 const CategoryPage = lazy(() => import('@/pages/CategoryPage'));
 const SearchPage = lazy(() => import('@/pages/SearchPage'));
+import WishlistPage from '@/pages/WishlistPage'; // 위시리스트 페이지는 일반 import
 const ProductRegisterPage = lazy(() => import('@/pages/ProductRegisterPage'));
 const ProductEditPage = lazy(() => import('@/pages/ProductEditPage'));
 const PaymentPage = lazy(() => import('@/pages/PaymentPage'));
@@ -22,6 +23,7 @@ const routes: RouteConfig[] = [
     { path: '/product/:id', element: <ProductDetailPage /> },
     { path: '/c/:category_id', element: <CategoryPage /> },
     { path: '/search', element: <SearchPage /> },
+    { path: '/wishlist', element: <WishlistPage /> },
     { path: '/cart', element: <CartPage /> },
     { path: '/productregister', element: <ProductRegisterPage />, protected: true },
     { path: '/products/edit/:productId', element: <ProductEditPage />, protected: true },
