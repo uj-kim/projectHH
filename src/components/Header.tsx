@@ -1,7 +1,7 @@
 // src/components/Header.tsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaShoppingCart } from 'react-icons/fa'; // 장바구니 아이콘
+import { FaShoppingCart, FaHeart } from 'react-icons/fa'; // 장바구니 아이콘
 import LoginModal from './LoginModal';
 import SearchBar from './SearchBar'; // SearchBar 컴포넌트 불러오기
 import { useAuth } from '@/hooks/useAuth';
@@ -48,6 +48,10 @@ const Header: React.FC = () => {
 
             {/* 오른쪽: 장바구니 아이콘 및 로그인/로그아웃 버튼 */}
             <div className="flex items-center space-x-4">
+                {/* 좋아요(위시리스트) 아이콘 */}
+                <Link to="/wishlist" className="relative">
+                    <FaHeart className="text-2xl text-gray-700 hover:text-gray-900" />
+                </Link>
                 {/* 장바구니 아이콘 */}
                 <Link to="/cart" className="relative">
                     <FaShoppingCart className="text-2xl text-gray-700 hover:text-gray-900" />
