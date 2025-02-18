@@ -40,7 +40,6 @@ const CartPage: React.FC = () => {
         mutationFn: (productId: string) => removeCartItem(user!.id, productId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['cart', user?.id] });
-            toast.success('장바구니에서 제거되었습니다.');
         },
         onError: (error: Error) => {
             toast.error(`장바구니에서 제거하지 못했습니다: ${error.message}`);
@@ -52,7 +51,6 @@ const CartPage: React.FC = () => {
             updateCartItemQuantity(user!.id, productId, quantity),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['cart', user?.id] });
-            toast.success('수량이 업데이트되었습니다.');
         },
         onError: (error: Error) => {
             toast.error(`수량 업데이트에 실패했습니다: ${error.message}`);
