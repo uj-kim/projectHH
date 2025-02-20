@@ -31,6 +31,26 @@ export const createOrder = async (orderId: string, orderData: {
 }
 
 /**
+ * 결제 검증 결과 받아오는 함수
+ * @param paymentId
+ */
+export const completePayment = async (payload: { paymentId: string; order: any; }) => {
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_FUNCTION_URL}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }
+    );
+    if (!response.ok) {
+      throw new Error(await response.text());
+    }
+    return response.json();
+  };
+  
+
+/**
  * 결제 상태 업데이트 함수
  * @param paymentData
  * @returns
