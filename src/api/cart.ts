@@ -158,6 +158,7 @@ export const getCartItems = async (
       *,
       product: products(*)
     `)
+    .order('product_id', { ascending: true })
     .eq('order_id', cartOrder.order_id)
     .range(from, to)
 
