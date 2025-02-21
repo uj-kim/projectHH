@@ -2,22 +2,34 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 
 console.log("Payment Complete Function Running")
 
+// CORS 헤더 설정
+const corsHeaders = {
+  "Content-Type": "application/json",
+  "Access-Control-Allow-Origin": "*", // 또는 "https://project-hh-nine.vercel.app"로 제한 가능
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
 Deno.serve(async (req) => {
   // const { name } = await req.json()
   // const data = {
   //   message: `Hello ${name}!`,
   // }
+  // OPTIONS 요청 처리 (preflight)
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
   try {
-    // 클라이언트에서 paymentId와 주문 정보를 전달받습니다.
+    // 클라이언트에서 paymentId와 주문 정보 전달 받기
     const { paymentId, order } = await req.json();
 
-    // 환경변수에서 PortOne V2 API 시크릿을 가져옵니다.
+    // 환경변수에서 PortOne V2 API 시크릿을 가져오기기
     const portoneApiSecret = Deno.env.get("VITE_V2_API_SECRET");
     if (!portoneApiSecret) {
       throw new Error("VITE_V2_API_SECRET is not set");
     }
 
-      // PortOne 결제 조회 API를 호출합니다.
+      // PortOne 결제 조회 API 호출
       const paymentResponse = await fetch(
         `https://api.portone.io/payments/${encodeURIComponent(paymentId)}`,
         {
@@ -40,10 +52,8 @@ Deno.serve(async (req) => {
     // 결제 상태에 따른 추가 처리 로직 (예: 결제 완료, 가상계좌 발급 등)
     if (payment.status === "PAID") {
       console.info("결제 완료", payment);
-      // 여기서 주문 상태 업데이트 등 추가 로직을 구현할 수 있습니다.
     } else if (payment.status === "VIRTUAL_ACCOUNT_ISSUED") {
       console.info("가상계좌 발급", payment);
-      // 가상계좌 발급 관련 추가 로직 처리
     }
 
     // 결제 상태를 클라이언트에 반환합니다.
