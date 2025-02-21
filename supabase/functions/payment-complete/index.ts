@@ -5,7 +5,7 @@ console.log("Payment Complete Function Running")
 // CORS 헤더 설정
 const corsHeaders = {
   "Content-Type": "application/json",
-  "Access-Control-Allow-Origin": "*", // 또는 "https://project-hh-nine.vercel.app"로 제한 가능
+  "Access-Control-Allow-Origin": "https://project-hh-nine.vercel.app",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
 };
