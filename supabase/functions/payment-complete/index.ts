@@ -1,61 +1,89 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { corsHeaders } from '../_shared/cors.ts'
-console.log("Payment Complete Function Running");
+import { corsHeaders } from "../_shared/cors.ts";
+
+console.log("PortOne Webhook (Payment Complete) Function Running");
+
+/**
+ * ✅ 아임포트 액세스 토큰 발급 함수
+ */
+async function getIamportAccessToken(): Promise<string> {
+  const res = await fetch("https://api.iamport.kr/users/getToken", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      imp_key: Deno.env.get("IMPORT_REST_API_KEY"),
+      imp_secret: Deno.env.get("IMPORT_REST_API_SECRET"),
+    }),
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`Failed to get access token: ${errorText}`);
+  }
+
+  const data = await res.json();
+  if (!data.response?.access_token) {
+    throw new Error("Access token not received");
+  }
+
+  return data.response.access_token;
+}
 
 Deno.serve(async (req) => {
-  // Preflight 요청(OPTIONS) 처리
+  // ✅ Preflight OPTIONS 요청 처리 (CORS)
   if (req.method === "OPTIONS") {
-    return new Response("ok", { status: 204, headers: corsHeaders });
+    console.log("Preflight OPTIONS request received");
+    return new Response(null, {
+      status: 204,
+      headers: corsHeaders,
+    });
   }
 
   try {
-    // 클라이언트에서 paymentId와 주문 정보를 전달받음
-    const { paymentId, order } = await req.json();
+    // ✅ 포트원 웹훅 데이터 수신
+    const webhookData = await req.json();
+    console.log("🔍 Received Webhook Data:", webhookData);
 
-    // 환경변수에서 PortOne V2 API 시크릿을 가져옴
-    const portoneApiSecret = Deno.env.get("VITE_V2_API_SECRET");
-    if (!portoneApiSecret) {
-      throw new Error("VITE_V2_API_SECRET is not set");
+    const { imp_uid, merchant_uid, status } = webhookData;
+
+    if (!imp_uid || !merchant_uid || !status) {
+      throw new Error("Missing required parameters: imp_uid, merchant_uid, status");
     }
 
-    // PortOne 결제 조회 API 호출
+    // ✅ 아임포트 액세스 토큰 발급
+    const accessToken = await getIamportAccessToken();
+    console.log("✅ Access Token Acquired");
+
+    // ✅ imp_uid(결제 ID)로 포트원 서버에서 결제 정보 조회
     const paymentResponse = await fetch(
-      `https://api.portone.io/payments/${encodeURIComponent(paymentId)}`,
+      `https://api.iamport.kr/payments/${encodeURIComponent(imp_uid)}`,
       {
         headers: {
-          Authorization: `PortOne ${portoneApiSecret}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       }
     );
+
     if (!paymentResponse.ok) {
       const errorText = await paymentResponse.text();
       throw new Error(`Payment API error: ${errorText}`);
     }
+
     const payment = await paymentResponse.json();
+    console.log("✅ 아임포트 결제 정보:", payment);
 
-    // 주문 정보와 실제 결제 금액 비교
-    if (order.amount !== payment.amount.total) {
-      throw new Error("결제 금액 불일치: 위/변조 의심");
-    }
+    const amountPaid = payment.response.amount; // 실제 결제 금액
+    const statusFromPortOne = payment.response.status; // 포트원 결제 상태
 
-    // 결제 상태에 따른 추가 처리 (예: PAID 또는 VIRTUAL_ACCOUNT_ISSUED)
-    if (payment.status === "PAID") {
-      console.info("결제 완료", payment);
-    } else if (payment.status === "VIRTUAL_ACCOUNT_ISSUED") {
-      console.info("가상계좌 발급", payment);
-    }
-
-    // 결제 상태를 클라이언트에 반환
-    const data = { status: payment.status };
-    return new Response(JSON.stringify(data), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
+    return new Response(
+      JSON.stringify({ message: "Webhook processed successfully", status: statusFromPortOne }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+    );
   } catch (e: any) {
-    const errorData = { status: "FAILED", message: e.message };
-    return new Response(JSON.stringify(errorData), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 400,
-    });
+    console.error("❌ Webhook processing failed:", e.message);
+    return new Response(
+      JSON.stringify({ status: "FAILED", message: e.message }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+    );
   }
 });

@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 export default defineConfig({
     plugins: [
         react(),
-        visualizer({open: true}) as PluginOption,
+        visualizer({open: false}) as PluginOption,
     ],
     resolve: {
         alias: {

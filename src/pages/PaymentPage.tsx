@@ -1,4 +1,3 @@
-// src/pages/PaymentPage.tsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -98,25 +97,34 @@ const PaymentPage: React.FC = () => {
     // completePayment mutation (Edge Function 호출)
     const completePaymentMutation = useCompletePayment();
 
-    // PaymentForm에 전달할 completePaymentAction 함수
-    // paymentId만 인자로 받되, 내부에서 주문 정보(orderId, totalPrice)를 함께 전달합니다.
-    const handleCompletePayment = async (paymentId: string) => {
+    // ✅ `handleCompletePayment` 수정: `imp_uid` 추가
+    const handleCompletePayment = async (impUid: string, merchantUid: string) => {
         if (!orderId) {
             throw new Error('Order ID is not available');
         }
+
+        console.log('🔍 결제 검증 요청:', { impUid, merchantUid, orderId, amount: totalPrice });
+
+        // ✅ 결제 검증 요청 (웹훅에 의존하지 않고, 직접 확인)
         const verifyResult = await completePaymentMutation.mutateAsync({
-            paymentId,
-            order: { id: orderId, amount: totalPrice },
+            impUid, // ✅ 아임포트에서 생성한 결제 고유번호
+            merchantUid, // ✅ 주문번호
+            order: { id: orderId, amount: totalPrice, status: 'Pending' }, // ✅ 주문 정보 (결제 금액 등)
         });
+
+        console.log('✅ 결제 검증 결과:', verifyResult);
+
         if (verifyResult.status === 'PAID') {
-            // 결제 검증이 성공하면, DB의 결제 상태를 업데이트합니다.
+            // ✅ 결제 검증 성공 후 상태 업데이트
             await updatePaymentStatusMutation.mutateAsync({
                 order_id: orderId,
                 user_id: user!.id,
+                imp_uid: impUid,
                 payment_method: paymentMethod,
                 payment_status: 'Completed',
             });
         }
+
         return verifyResult;
     };
 
@@ -170,13 +178,13 @@ const PaymentPage: React.FC = () => {
                         name: cartData[0].product.product_name,
                         price: cartData[0].product.price,
                         currency: 'CURRENCY_KRW',
-                    }} // 실제 DB의 상품 정보를 전달
+                    }}
                     fullName={userProfile?.nickname || ''}
                     email={userProfile?.email || ''}
                     phoneNumber={`010-7610-5403`}
                     storeId={import.meta.env.VITE_PORTONE_STORE_ID!}
                     channelKey={import.meta.env.VITE_PORTONE_CHANNEL_KEY!}
-                    completePaymentAction={handleCompletePayment}
+                    completePaymentAction={handleCompletePayment} // ✅ `imp_uid` 포함하여 수정
                 />
             )}
         </div>
