@@ -98,20 +98,20 @@ const PaymentPage: React.FC = () => {
     // completePayment mutation (Edge Function 호출)
     const completePaymentMutation = useCompletePayment();
 
-    // PaymentForm에 전달할 completePaymentAction 함수
-    // paymentId만 인자로 받되, 내부에서 주문 정보(orderId, totalPrice)를 함께 전달합니다.
-    const handleCompletePayment = async (paymentId: string) => {
-        if (!orderId) {
-            throw new Error('Order ID is not available');
-        }
+    // 결제 검증 API 호출: paymentId와 주문정보(주문번호, 총금액)를 서버에 전달
+    const handleCompletePayment = async (
+        paymentId: string,
+        orderInfo: { orderNumber: string; totalAmount: number }
+    ) => {
+        console.log('🔍 결제 검증 요청 시작, paymentId:', paymentId, 'orderInfo:', orderInfo);
         const verifyResult = await completePaymentMutation.mutateAsync({
-            paymentId,
-            order: { id: orderId, amount: totalPrice },
+            paymentId, // 별도 전달: 경로에 사용됨
+            order: { id: orderInfo.orderNumber, totalAmount: orderInfo.totalAmount },
         });
+        console.log('✅ 결제 검증 결과:', verifyResult);
         if (verifyResult.status === 'PAID') {
-            // 결제 검증이 성공하면, DB의 결제 상태를 업데이트합니다.
             await updatePaymentStatusMutation.mutateAsync({
-                order_id: orderId,
+                order_id: orderInfo.orderNumber,
                 user_id: user!.id,
                 payment_method: paymentMethod,
                 payment_status: 'Completed',
@@ -138,7 +138,7 @@ const PaymentPage: React.FC = () => {
         await createOrderMutation.mutateAsync({
             orderId: orderIdFromCart,
             orderData: {
-                buyer_id: user.id,
+                buyer_id: user!.id,
                 delivery_address: shippingAddress,
                 total_price: totalPrice,
                 status: 'Pending', // 초기 상태
@@ -162,7 +162,6 @@ const PaymentPage: React.FC = () => {
             >
                 {createOrderMutation.isPending ? '주문 생성 중' : '주문 생성 및 결제하기'}
             </button>
-            {/* 주문 생성이 완료되면 PaymentForm 렌더링 */}
             {orderId && (
                 <PaymentForm
                     item={{
@@ -170,10 +169,12 @@ const PaymentPage: React.FC = () => {
                         name: cartData[0].product.product_name,
                         price: cartData[0].product.price,
                         currency: 'CURRENCY_KRW',
-                    }} // 실제 DB의 상품 정보를 전달
+                    }}
+                    orderNumber={orderId} // supabase orders 테이블의 order_id
+                    totalAmount={totalPrice} // 주문 총금액
                     fullName={userProfile?.nickname || ''}
                     email={userProfile?.email || ''}
-                    phoneNumber={`010-7610-5403`}
+                    phoneNumber="010-7610-5403"
                     storeId={import.meta.env.VITE_PORTONE_STORE_ID!}
                     channelKey={import.meta.env.VITE_PORTONE_CHANNEL_KEY!}
                     completePaymentAction={handleCompletePayment}
