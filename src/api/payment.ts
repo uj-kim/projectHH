@@ -38,17 +38,38 @@ export const createOrder = async (
  * @param impUid - 아임포트 결제 ID
  * @param order - 주문 정보 (결제 금액 등)
  */
-export const completePayment = async (payload: { impUid: string; merchantUid: string; order: any }) => {
-    // 서버가 요구하는 형식으로 재구성
-    const requestBody = {
-        imp_uid: payload.impUid,           // impUid 필드 추가
-        merchant_uid: payload.merchantUid, // 기존 paymentId를 merchant_uid로 사용
-        status: payload.order.status,                    // 결제 성공 시 status (API 문서에 맞게 수정)
-        order: payload.order,
-    };
+// export const completePayment = async (payload: { impUid: string; merchantUid: string; order: any }) => {
+//     // 서버가 요구하는 형식으로 재구성
+//     const requestBody = {
+//         imp_uid: payload.impUid,           // impUid 필드 추가
+//         merchant_uid: payload.merchantUid, // 기존 paymentId를 merchant_uid로 사용
+//         status: payload.order.status,                    // 결제 성공 시 status (API 문서에 맞게 수정)
+//         order: payload.order,
+//     };
 
+//     console.log("🔍 결제 검증 요청:", requestBody);
+
+//     const response = await fetch(import.meta.env.VITE_SUPABASE_FUNCTION_URL, {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify(requestBody),
+//         mode: "cors",
+//         credentials: "include",
+//     });
+//     const responseBody = await response.text();
+
+//     if (!response.ok) {
+//         console.error("❌ 결제 검증 실패:", responseBody);
+//         throw new Error(responseBody);
+//     }
+
+//     const data = await response.json();
+//     console.log("✅ 결제 검증 성공:", data);
+//     return data;
+// };
+export const completePayment = async (payload: { paymentId: string; order: { id: string; totalAmount: number } }) => {
+    const requestBody = { paymentId: payload.paymentId, order: payload.order };
     console.log("🔍 결제 검증 요청:", requestBody);
-
     const response = await fetch(import.meta.env.VITE_SUPABASE_FUNCTION_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -56,17 +77,15 @@ export const completePayment = async (payload: { impUid: string; merchantUid: st
         mode: "cors",
         credentials: "include",
     });
-    const responseBody = await response.text();
-
+    const data = await response.json(); // 한 번만 읽습니다.
     if (!response.ok) {
-        console.error("❌ 결제 검증 실패:", responseBody);
-        throw new Error(responseBody);
+        console.error("❌ 결제 검증 실패:", data.message);
+        throw new Error(data.message);
     }
-
-    const data = await response.json();
     console.log("✅ 결제 검증 성공:", data);
     return data;
 };
+
 
 
 /**
@@ -77,7 +96,6 @@ export const completePayment = async (payload: { impUid: string; merchantUid: st
 export const updatePaymentStatus = async (paymentData: {
     order_id: string;
     user_id: string;
-    imp_uid: string; // ✅ 아임포트 결제 ID 추가
     payment_method: string;
     payment_status: string;
 }): Promise<Database["public"]["Tables"]["payments"]["Row"]> => {

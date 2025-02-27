@@ -1,82 +1,106 @@
+// supabase/payment-complete/index.ts
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { corsHeaders } from "../_shared/cors.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
 console.log("PortOne Webhook (Payment Complete) Function Running");
 
-/**
- * ✅ 아임포트 액세스 토큰 발급 함수
- */
+const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
 async function getIamportAccessToken(): Promise<string> {
-  const res = await fetch("https://api.iamport.kr/users/getToken", {
+  const res = await fetch("https://api.portone.io/login/api-secret", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      imp_key: Deno.env.get("IMPORT_REST_API_KEY"),
-      imp_secret: Deno.env.get("IMPORT_REST_API_SECRET"),
-    }),
+    body: JSON.stringify({ apiSecret: Deno.env.get("V2_API_SECRET") }),
   });
-
+  console.log("res:", res);
   if (!res.ok) {
     const errorText = await res.text();
     throw new Error(`Failed to get access token: ${errorText}`);
   }
-
   const data = await res.json();
-  if (!data.response?.access_token) {
+  console.log("🔑 Access Token Response:", data);
+  if (!data?.accessToken) {
     throw new Error("Access token not received");
   }
-
-  return data.response.access_token;
+  return data.accessToken;
 }
 
 Deno.serve(async (req) => {
-  // ✅ Preflight OPTIONS 요청 처리 (CORS)
   if (req.method === "OPTIONS") {
     console.log("Preflight OPTIONS request received");
-    return new Response(null, {
-      status: 204,
-      headers: corsHeaders,
-    });
+    return new Response(null, { status: 204, headers: corsHeaders });
   }
 
   try {
-    // ✅ 포트원 웹훅 데이터 수신
+    // 클라이언트는 { paymentId, order: { id: orderNumber, totalAmount } } 형태로 전달합니다.
     const webhookData = await req.json();
     console.log("🔍 Received Webhook Data:", webhookData);
-
-    const { imp_uid, merchant_uid, status } = webhookData;
-
-    if (!imp_uid || !merchant_uid || !status) {
-      throw new Error("Missing required parameters: imp_uid, merchant_uid, status");
+    const { paymentId, order } = webhookData;
+    if (!paymentId || !order || !order.id || order.totalAmount === undefined) {
+      throw new Error("Missing required parameters: paymentId, order.id and order.totalAmount");
     }
+    const orderNumber = order.id; // supabase orders 테이블의 주문번호
+    const clientExpectedAmount = order.totalAmount; // 클라이언트가 전달한 주문 총금액
+    console.log("✅ 클라이언트 전달 예상 금액:", clientExpectedAmount);
 
-    // ✅ 아임포트 액세스 토큰 발급
+    // 1. 액세스 토큰 발급
     const accessToken = await getIamportAccessToken();
     console.log("✅ Access Token Acquired");
 
-    // ✅ imp_uid(결제 ID)로 포트원 서버에서 결제 정보 조회
-    const paymentResponse = await fetch(
-      `https://api.iamport.kr/payments/${encodeURIComponent(imp_uid)}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+    // 2. 결제 사전등록 API 호출 (헤더에 accessToken 포함)
+    // const preRegisterResponse = await fetch(
+    //   `https://api.portone.io/payments/${encodeURIComponent(paymentId)}/pre-register`,
+    //   {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //       Authorization: `Bearer ${accessToken}`,
+    //     },
+    //     body: JSON.stringify({ paymentId }),
+    //   }
+    // );
+    // if (!preRegisterResponse.ok) {
+    //   const errorText = await preRegisterResponse.text();
+    //   throw new Error(`Pre-register API error: ${errorText}`);
+    // }
+    // console.log("✅ 결제 사전등록 API 호출 성공");
 
+    // 3. PortOne API 호출 – paymentId(merchant_uid)로 결제 상세 정보 조회
+    const paymentResponse = await fetch(
+      `https://api.portone.io/payments/${encodeURIComponent(paymentId)}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
     if (!paymentResponse.ok) {
       const errorText = await paymentResponse.text();
       throw new Error(`Payment API error: ${errorText}`);
     }
+    const paymentResult = await paymentResponse.json();
+    console.log("✅ PortOne 결제 정보:", paymentResult);
 
-    const payment = await paymentResponse.json();
-    console.log("✅ 아임포트 결제 정보:", payment);
+    // 실제 응답 JSON 구조에 따른 결제 금액 및 상태 추출
+    const amountPaid = paymentResult.amount.paid;
+    const statusFromPortOne = paymentResult.status;
 
-    const amountPaid = payment.response.amount; // 실제 결제 금액
-    const statusFromPortOne = payment.response.status; // 포트원 결제 상태
+    // 4. 검증: 클라이언트가 전달한 주문 총금액과 실제 결제 금액, 그리고 결제 상태 비교
+    if (clientExpectedAmount !== amountPaid) {
+      throw new Error("결제 금액 불일치: 위변조 의심");
+    }
+    if (statusFromPortOne !== "PAID") {  // "PAID"와 비교
+      throw new Error("결제 상태가 유효하지 않습니다.");
+    }
 
+    // 5. 검증 성공 
     return new Response(
-      JSON.stringify({ message: "Webhook processed successfully", status: statusFromPortOne }),
+      JSON.stringify({
+        message: "Webhook processed successfully",
+        status: statusFromPortOne,
+        imp_uid: paymentId,
+        order: orderNumber,
+        amount: amountPaid
+            }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );
   } catch (e: any) {

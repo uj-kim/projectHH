@@ -1,3 +1,4 @@
+// src/pages/PaymentPage.tsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -97,34 +98,25 @@ const PaymentPage: React.FC = () => {
     // completePayment mutation (Edge Function 호출)
     const completePaymentMutation = useCompletePayment();
 
-    // ✅ `handleCompletePayment` 수정: `imp_uid` 추가
-    const handleCompletePayment = async (impUid: string, merchantUid: string) => {
-        if (!orderId) {
-            throw new Error('Order ID is not available');
-        }
-
-        console.log('🔍 결제 검증 요청:', { impUid, merchantUid, orderId, amount: totalPrice });
-
-        // ✅ 결제 검증 요청 (웹훅에 의존하지 않고, 직접 확인)
+    // 결제 검증 API 호출: paymentId와 주문정보(주문번호, 총금액)를 서버에 전달
+    const handleCompletePayment = async (
+        paymentId: string,
+        orderInfo: { orderNumber: string; totalAmount: number }
+    ) => {
+        console.log('🔍 결제 검증 요청 시작, paymentId:', paymentId, 'orderInfo:', orderInfo);
         const verifyResult = await completePaymentMutation.mutateAsync({
-            impUid, // ✅ 아임포트에서 생성한 결제 고유번호
-            merchantUid, // ✅ 주문번호
-            order: { id: orderId, amount: totalPrice, status: 'Pending' }, // ✅ 주문 정보 (결제 금액 등)
+            paymentId, // 별도 전달: 경로에 사용됨
+            order: { id: orderInfo.orderNumber, totalAmount: orderInfo.totalAmount },
         });
-
         console.log('✅ 결제 검증 결과:', verifyResult);
-
         if (verifyResult.status === 'PAID') {
-            // ✅ 결제 검증 성공 후 상태 업데이트
             await updatePaymentStatusMutation.mutateAsync({
-                order_id: orderId,
+                order_id: orderInfo.orderNumber,
                 user_id: user!.id,
-                imp_uid: impUid,
                 payment_method: paymentMethod,
                 payment_status: 'Completed',
             });
         }
-
         return verifyResult;
     };
 
@@ -146,7 +138,7 @@ const PaymentPage: React.FC = () => {
         await createOrderMutation.mutateAsync({
             orderId: orderIdFromCart,
             orderData: {
-                buyer_id: user.id,
+                buyer_id: user!.id,
                 delivery_address: shippingAddress,
                 total_price: totalPrice,
                 status: 'Pending', // 초기 상태
@@ -170,7 +162,6 @@ const PaymentPage: React.FC = () => {
             >
                 {createOrderMutation.isPending ? '주문 생성 중' : '주문 생성 및 결제하기'}
             </button>
-            {/* 주문 생성이 완료되면 PaymentForm 렌더링 */}
             {orderId && (
                 <PaymentForm
                     item={{
@@ -179,12 +170,14 @@ const PaymentPage: React.FC = () => {
                         price: cartData[0].product.price,
                         currency: 'CURRENCY_KRW',
                     }}
+                    orderNumber={orderId} // supabase orders 테이블의 order_id
+                    totalAmount={totalPrice} // 주문 총금액
                     fullName={userProfile?.nickname || ''}
                     email={userProfile?.email || ''}
-                    phoneNumber={`010-7610-5403`}
+                    phoneNumber="010-7610-5403"
                     storeId={import.meta.env.VITE_PORTONE_STORE_ID!}
                     channelKey={import.meta.env.VITE_PORTONE_CHANNEL_KEY!}
-                    completePaymentAction={handleCompletePayment} // ✅ `imp_uid` 포함하여 수정
+                    completePaymentAction={handleCompletePayment}
                 />
             )}
         </div>

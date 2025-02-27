@@ -1,7 +1,9 @@
+// src/components/payments/PaymentForm.tsx
 import * as PortOne from '@portone/browser-sdk/v2';
 import { Currency } from '@portone/browser-sdk/dist/v2/entity';
 import { Customer } from '@portone/browser-sdk/dist/v2/entity';
 import { FormEventHandler, useState } from 'react';
+import { randomId } from '@/lib/random'; // 임의의 ID 생성 유틸
 
 export type PaymentStatus = {
     status: string;
@@ -10,16 +12,24 @@ export type PaymentStatus = {
 
 export type PaymentFormProps = {
     item: { id: string; name: string; price: number; currency: Currency };
+    orderNumber: string; // supabase orders 테이블의 id
+    totalAmount: number;
     fullName: Customer['fullName'];
     email: Customer['email'];
     phoneNumber: Customer['phoneNumber'];
     storeId: string;
     channelKey: string;
-    completePaymentAction: (paymentId: string, impUid: string) => Promise<PaymentStatus>;
+    // completePaymentAction는 paymentId와 주문정보를 매개변수로 받습니다.
+    completePaymentAction: (
+        paymentId: string,
+        order: { orderNumber: string; totalAmount: number }
+    ) => Promise<PaymentStatus>;
 };
 
 const PaymentForm: React.FC<PaymentFormProps> = ({
     item,
+    orderNumber,
+    totalAmount,
     fullName,
     email,
     phoneNumber,
@@ -40,11 +50,11 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
             amount: item.price,
         });
 
-        // ✅ PortOne 결제 요청 실행
+        // PortOne 결제 요청 실행 – paymentId는 PortOne에서 반환된 값 사용
         const response = await PortOne.requestPayment({
             storeId,
             channelKey,
-            paymentId: `order_${new Date().getTime()}`, // ✅ 주문 ID 생성
+            paymentId: `payment-${randomId()}`, // 임시 생성, 실제 반환되는 값을 사용합니다.
             orderName: item.name,
             totalAmount: item.price,
             currency: item.currency,
@@ -54,26 +64,25 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
         });
 
         if (response?.code !== undefined) {
-            console.error('❌ 결제 실패:', response?.message);
+            console.error('❌ 결제 실패:', response.message);
             setPaymentStatus({ status: 'FAILED', message: response.message });
             return;
         }
 
-        // ✅ PortOne이 반환한 `imp_uid`를 결제 ID로 사용
-        console.log('response:', response);
-        // const paymentId = response?.txId ?? '';
-        const impUid = response?.txId ?? '';
-        const merchantUid = response?.paymentId ?? '';
-        // console.log('✅ 결제 성공! paymentId:', paymentId);
+        // PortOne 결제 요청 성공 시, 응답으로 받은 paymentId 사용
+        const paymentId = response?.paymentId ?? '';
+        console.log('✅ 결제 요청 성공, paymentId:', paymentId);
 
-        // ✅ 백엔드에 결제 검증 요청 (결제 금액 포함)
-        if (impUid) {
-            const result = await completePaymentAction(impUid, merchantUid);
-            // const result = await completePaymentAction(paymentId, { amount: item.price });
-            setPaymentStatus(result);
-        } else {
+        if (!paymentId) {
             setPaymentStatus({ status: 'FAILED', message: 'Payment ID is undefined' });
+            return;
         }
+
+        // 결제 요청 성공 시, 주문정보(주문번호와 총금액)를 함께 서버에 전달하여 검증 진행
+        const orderInfo = { orderNumber, totalAmount };
+        console.log('✅ 결제 검증을 시작합니다.');
+        const result = await completePaymentAction(paymentId, orderInfo);
+        setPaymentStatus(result);
     };
 
     return (
