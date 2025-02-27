@@ -56,7 +56,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
             channelKey,
             paymentId: `payment-${randomId()}`, // 임시 생성, 실제 반환되는 값을 사용합니다.
             orderName: item.name,
-            totalAmount: item.price,
+            totalAmount: totalAmount,
             currency: item.currency,
             payMethod: 'CARD',
             customer: { fullName, email, phoneNumber },
