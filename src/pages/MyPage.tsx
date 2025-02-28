@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { useDeleteUser } from '@/hooks/useDeleteUser';
 import { useSignOut } from '@/hooks/useSignOut';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useWishlist } from '@/stores/wishlistStore';
 
 const Mypage: React.FC = () => {
     const { data: userProfile, isLoading, isError, error, refetch } = useUserProfile();
@@ -46,6 +47,7 @@ const Mypage: React.FC = () => {
     };
 
     // 회원 탈퇴를 위한 훅
+    const { clearWishlist } = useWishlist();
     const { mutate: deleteUserMutate } = useDeleteUser();
     const { mutate: signOut } = useSignOut();
 
@@ -53,6 +55,7 @@ const Mypage: React.FC = () => {
         if (userProfile && window.confirm('정말로 탈퇴하시겠습니까?')) {
             deleteUserMutate(userProfile.user_id, {
                 onSuccess: async () => {
+                    clearWishlist(userProfile.user_id);
                     alert('회원 탈퇴가 완료되었습니다.');
                     signOut();
                     navigate('/');

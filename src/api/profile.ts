@@ -78,3 +78,43 @@ export const updateUserSellerStatus = async (userId: string): Promise<void> => {
         throw new Error(error.message);
     }
 };
+
+/*사용자 계정 삭제*/
+export const deleteUserAccount = async (userId: string): Promise<void> => {
+
+    // 장바구니 내역 삭제 (테이블 명은 실제 사용하는 명으로 변경)
+    let { error } = await supabase
+    .from('payments')
+    .delete()
+    .eq('user_id', userId);
+    if (error) {
+    throw new Error('장바구니 삭제 오류: ' + error.message);
+    }
+
+    // 구매 내역 삭제 (orders 테이블의 buyer_id 기준으로 삭제)
+    ({ error } = await supabase
+    .from('orders')
+    .delete()
+    .eq('buyer_id', userId));
+    if (error) {
+    throw new Error('구매 내역 삭제 오류: ' + error.message);
+    }
+
+    // 판매 상품 삭제 (products 테이블의 seller_id 기준으로 삭제)
+    ({ error } = await supabase
+    .from('products')
+    .delete()
+    .eq('seller_id', userId));
+    if (error) {
+    throw new Error('판매 상품 삭제 오류: ' + error.message);
+    }
+
+    // 마지막으로 사용자 프로필 삭제
+    ({ error } = await supabase
+    .from('user_profiles')
+    .delete()
+    .eq('user_id', userId));
+    if (error) {
+    throw new Error('사용자 프로필 삭제 오류: ' + error.message);
+    }
+};
