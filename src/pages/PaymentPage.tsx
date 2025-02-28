@@ -154,13 +154,13 @@ const PaymentPage: React.FC = () => {
             <h1 className="text-2xl font-bold mb-4">결제 페이지</h1>
             <ShippingForm />
             <OrderSummary items={cartData} totalPrice={totalPrice} />
-            <PaymentMethod paymentMethod={paymentMethod} setPaymentMethod={setPaymentMethod} />
+            {/* <PaymentMethod paymentMethod={paymentMethod} setPaymentMethod={setPaymentMethod} /> */}
             <button
                 onClick={handlePayment}
                 className="mt-4 w-full p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
                 disabled={createOrderMutation.isPending}
             >
-                {createOrderMutation.isPending ? '주문 생성 중' : '주문 생성 및 결제하기'}
+                {createOrderMutation.isPending ? '주문 생성 중' : '결제하기'}
             </button>
             {orderId && (
                 <PaymentForm
