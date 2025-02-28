@@ -6,6 +6,7 @@ import Layout from '@/components/Layout';
 import LoginModal from '@/components/LoginModal';
 import { useAuth } from '@/hooks/useAuth';
 import { useState, useEffect } from 'react';
+import ScrollTop from '@/components/ScrollTop';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     const { data: user, isLoading } = useAuth();
@@ -32,6 +33,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const AppRoutes = () => {
     return (
         <Router>
+            <ScrollTop />
             <Routes>
                 <Route path="/" element={<Layout />}>
                     {routes.map(({ path, element, protected: isProtected }, index) => {
