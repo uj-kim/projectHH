@@ -6,7 +6,6 @@ import { createOrder, updatePaymentStatus } from '@/api/payment';
 import { getCartItems } from '@/api/cart';
 import ShippingForm from '@/components/payments/ShippingForm';
 import OrderSummary from '@/components/payments/OrderSummary';
-import PaymentMethod from '@/components/payments/PaymentMethod';
 import PaymentForm from '@/components/payments/PaymentForm';
 import { useCompletePayment } from '@/hooks/usePaymentComplete';
 import { toast } from 'react-toastify';
