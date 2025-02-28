@@ -8,7 +8,6 @@ import ReviewSection from '@/components/Review';
 
 const ProductDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
-    const navigate = useNavigate();
 
     // 상품 상세 정보 가져오기 using useQuery
     const {
@@ -30,9 +29,6 @@ const ProductDetailPage: React.FC = () => {
 
     return (
         <div className="p-6">
-            <button onClick={() => navigate(-1)} className="mb-4 text-blue-500 hover:underline">
-                ← 뒤로가기
-            </button>
             <ProductDetail product={product} />
             <div className="mt-12">
                 <ReviewSection productId={product.product_id} />

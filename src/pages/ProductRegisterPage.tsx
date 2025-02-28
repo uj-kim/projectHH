@@ -8,6 +8,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useProductFormStore } from '@/stores/productStore';
 import { Database } from '@/types/database.types';
+import { updateUserSellerStatus } from '@/api/profile';
 
 const ProductRegisterPage: React.FC = () => {
     const navigate = useNavigate();
@@ -31,10 +32,13 @@ const ProductRegisterPage: React.FC = () => {
         CreateProductVariables
     >({
         mutationFn: createProduct,
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
             if (data) {
                 queryClient.invalidateQueries({ queryKey: ['products', data.seller_id] });
                 resetForm();
+                if (user?.id) {
+                    await updateUserSellerStatus(user.id);
+                }
                 navigate('/mypage');
             }
         },

@@ -50,7 +50,8 @@ const PurchaseHistoryTable: React.FC = () => {
                             <TableHead className="whitespace-nowrap text-center">상품 이미지</TableHead>
                             <TableHead className="whitespace-nowrap text-center">상품명</TableHead>
                             <TableHead className="whitespace-nowrap text-center">수량</TableHead>
-                            <TableHead className="whitespace-nowrap text-center">가격</TableHead>
+                            <TableHead className="whitespace-nowrap text-center">단가</TableHead>
+                            <TableHead className="whitespace-nowrap text-center">총 가격</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -77,7 +78,8 @@ const PurchaseHistoryTable: React.FC = () => {
                                     <TableHead className="whitespace-nowrap text-center">상품 이미지</TableHead>
                                     <TableHead className="whitespace-nowrap text-center">상품명</TableHead>
                                     <TableHead className="whitespace-nowrap text-center">수량</TableHead>
-                                    <TableHead className="whitespace-nowrap text-center">가격</TableHead>
+                                    <TableHead className="whitespace-nowrap text-center">단가</TableHead>
+                                    <TableHead className="whitespace-nowrap text-center">총 가격</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -102,6 +104,9 @@ const PurchaseHistoryTable: React.FC = () => {
                                             </TableCell>
                                             <TableCell className="whitespace-nowrap text-center">
                                                 ₩{order.price.toLocaleString()}
+                                            </TableCell>
+                                            <TableCell className="whitespace-nowrap text-center">
+                                                ₩{order.total_price.toLocaleString()}
                                             </TableCell>
                                         </TableRow>
                                     ))

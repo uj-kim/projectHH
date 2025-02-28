@@ -7,16 +7,17 @@ import { addToCart } from '@/api/cart';
 import { useAuth } from '@/hooks/useAuth'; // React Query 기반 인증 훅
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { Button } from '../ui/button';
+import { useWishlist } from '@/stores/wishlistStore';
 
 interface ProductDetailProps {
     product: Database['public']['Tables']['products']['Row'];
-    // favorite: boolean;
-    // toggleFavorite: () => void;
 }
 
 const ProductDetail: React.FC<ProductDetailProps> = ({ product }) => {
     // React Query를 사용하여 인증된 사용자 정보 가져오기
     const { data: user, isLoading: isAuthLoading, isError: isAuthError, error: authError } = useAuth();
+    const { wishlists, toggleWishlist } = useWishlist();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
@@ -70,6 +71,18 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product }) => {
         mutation.mutate(quantity);
     };
 
+    // '위시리스트에 추가' 버튼 클릭 핸들러
+    const isWishListed = user ? (wishlists[user.id] || []).some((p) => p.product_id === product.product_id) : false;
+
+    const handleAddToWishlist = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault(); // Link 클릭 시 페이지 이동 방지
+        if (!user) {
+            toast.info('로그인이 필요합니다.');
+            return;
+        }
+        toggleWishlist(user.id, product);
+    };
+
     // 인증 로딩 중일 때 로딩 메시지 표시
     if (isAuthLoading) return <div>인증 상태를 확인 중입니다...</div>;
 
@@ -80,11 +93,13 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product }) => {
         <div className="flex flex-col md:flex-row gap-6">
             {/* 상품 이미지 */}
             <div className="md:w-1/2">
-                <img
-                    src={product.image_url || '/placeholder-image.png'}
-                    alt={product.product_name}
-                    className="w-full h-auto object-cover rounded-md shadow-md"
-                />
+                <div className="h-[50vh]">
+                    <img
+                        src={product.image_url || '/placeholder-image.png'}
+                        alt={product.product_name}
+                        className="w-full h-full object-cover rounded-md shadow-md"
+                    />
+                </div>
             </div>
 
             {/* 상품 정보 */}
@@ -110,25 +125,28 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product }) => {
                     />
                 </div>
 
+                {/* 위시리스트에 추가 버튼 */}
+                <Button
+                    onClick={handleAddToWishlist}
+                    className={`bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors ${
+                        isWishListed ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                >
+                    {isWishListed ? '위시리스트에서 제거' : '위시리스트에 추가'}
+                </Button>
                 {/* 장바구니에 추가 버튼 */}
-                <button
+                <Button
                     onClick={handleAddToCart}
-                    className={`mt-2 p-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors ${
+                    className={`bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors ${
                         mutation.isPending ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                     disabled={mutation.isPending}
                 >
                     {mutation.isPending ? '추가 중...' : '장바구니에 추가'}
-                </button>
+                </Button>
 
                 {/* 상품 설명 */}
                 <p className="mt-4 text-gray-700">{product.description}</p>
-
-                {/* 추후 리뷰 섹션 추가 예정 */}
-                {/* <div className="mt-6">
-                    <h3 className="text-xl font-semibold">리뷰</h3>
-                    {/* 리뷰 컴포넌트 추가 예정 */}
-                {/* </div> */}
             </div>
         </div>
     );
