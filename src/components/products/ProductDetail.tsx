@@ -80,11 +80,13 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product }) => {
         <div className="flex flex-col md:flex-row gap-6">
             {/* 상품 이미지 */}
             <div className="md:w-1/2">
-                <img
-                    src={product.image_url || '/placeholder-image.png'}
-                    alt={product.product_name}
-                    className="w-full h-auto object-cover rounded-md shadow-md"
-                />
+                <div className="h-[50vh]">
+                    <img
+                        src={product.image_url || '/placeholder-image.png'}
+                        alt={product.product_name}
+                        className="w-full h-full object-cover rounded-md shadow-md"
+                    />
+                </div>
             </div>
 
             {/* 상품 정보 */}
@@ -123,12 +125,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product }) => {
 
                 {/* 상품 설명 */}
                 <p className="mt-4 text-gray-700">{product.description}</p>
-
-                {/* 추후 리뷰 섹션 추가 예정 */}
-                {/* <div className="mt-6">
-                    <h3 className="text-xl font-semibold">리뷰</h3>
-                    {/* 리뷰 컴포넌트 추가 예정 */}
-                {/* </div> */}
             </div>
         </div>
     );
