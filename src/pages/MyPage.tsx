@@ -100,7 +100,7 @@ const Mypage: React.FC = () => {
                 {/* 판매자 전환 섹션 */}
                 <div className="flex items-center justify-between mb-4">
                     <span className="text-s font-medium">판매할 상품이 있으신가요?</span>
-                    <Link to="/product/register">
+                    <Link to="/productregister">
                         <Button variant="default">상품등록</Button>
                     </Link>
                 </div>

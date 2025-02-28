@@ -66,3 +66,15 @@ export const updateDefaultAddress = async(userId: string, newAddress: string): P
     return data.address;
 }
 
+/*사용자 판매자 상태 업데이트*/
+export const updateUserSellerStatus = async (userId: string): Promise<void> => {
+    const { error } = await supabase
+        .from('user_profiles')
+        .update({ is_seller: true })
+        .eq('user_id', userId);
+
+    if (error) {
+        console.error('판매자 상태 업데이트 오류:', error.message);
+        throw new Error(error.message);
+    }
+};
