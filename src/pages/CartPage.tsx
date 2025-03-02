@@ -33,7 +33,7 @@ const CartPage: React.FC = () => {
         },
         initialPageParam: 0,
         enabled: !!user,
-        staleTime: 5 * 60 * 1000,
+        refetchOnMount: true,
     });
 
     const removeMutation = useMutation({

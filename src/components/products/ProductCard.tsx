@@ -1,4 +1,5 @@
 // src/components/products/ProductCard.tsx
+import { useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
@@ -18,6 +19,7 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product, showCartButton = false }) => {
     const [imageLoaded, setImageLoaded] = useState(false);
     const { wishlists, toggleWishlist } = useWishlist();
+    const queryClient = useQueryClient();
     const { data: user } = useAuth();
 
     // 로그인한 경우에만 해당 사용자의 wishlist를 확인
@@ -42,6 +44,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, showCartButton = fal
         try {
             // 수량은 1로 설정
             await addToCart(user.id, product.product_id, 1);
+            queryClient.invalidateQueries({ queryKey: ['cart', user.id] });
             toast.success('장바구니에 추가되었습니다.');
         } catch (error) {
             console.error(error);

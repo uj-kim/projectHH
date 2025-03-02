@@ -53,8 +53,6 @@ const Header: React.FC = () => {
                 {/* 장바구니 아이콘 */}
                 <Link to="/cart" className="relative">
                     <FaShoppingCart className="text-2xl text-gray-700 hover:text-gray-900" />
-                    {/* 장바구니에 담긴 아이템 수 표시 (옵션) */}
-                    {/* <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">3</span> */}
                 </Link>
 
                 {/* 로그인/로그아웃 버튼 */}
