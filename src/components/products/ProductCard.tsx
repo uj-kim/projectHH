@@ -8,12 +8,14 @@ import { useWishlist, Product } from '@/stores/wishlistStore';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'react-toastify';
 import { Button } from '../ui/button';
+import { addToCart } from '@/api/cart';
 
 interface ProductCardProps {
     product: Product;
+    showCartButton?: boolean;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, showCartButton = false }) => {
     const [imageLoaded, setImageLoaded] = useState(false);
     const { wishlists, toggleWishlist } = useWishlist();
     const { data: user } = useAuth();
@@ -28,6 +30,23 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             return;
         }
         toggleWishlist(user.id, product);
+    };
+
+    // "장바구니에 추가" 버튼 클릭 핸들러
+    const handleAddToCart = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        if (!user) {
+            toast.info('로그인이 필요합니다.');
+            return;
+        }
+        try {
+            // 수량은 1로 설정
+            await addToCart(user.id, product.product_id, 1);
+            toast.success('장바구니에 추가되었습니다.');
+        } catch (error) {
+            console.error(error);
+            toast.error('장바구니 추가에 실패했습니다.');
+        }
     };
 
     if (!imageLoaded) {
@@ -73,6 +92,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             >
                 {isWishlisted ? <FaHeart className="text-red-500" /> : <FaRegHeart />}
             </Button>
+
+            {/* 위시리스트 페이지에서만 "장바구니에 추가" 버튼 표시 */}
+            {showCartButton && (
+                <Button
+                    variant="default"
+                    onClick={handleAddToCart}
+                    className="absolute w-full bottom-2 left-1/2 transform -translate-x-1/2 opacity-0 bg-blue-500 text-white rounded-md hover:bg-blue-600 group-hover:opacity-100 transition-opacity"
+                >
+                    장바구니에 추가
+                </Button>
+            )}
 
             <h2 className="text-lg font-semibold">{product.product_name}</h2>
             <p className="text-gray-700">₩{product.price.toLocaleString()}</p>
