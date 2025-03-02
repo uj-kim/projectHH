@@ -110,12 +110,16 @@ export const createProduct = async (
 /**
  * 모든 상품 목록 가져오기
  */
-export const getProducts = async (): Promise<
+export const getProducts = async (
+  offset: number = 0,
+  limit: number = 8
+): Promise<
   Database['public']['Tables']['products']['Row'][]> => {
   const { data, error } = await supabase
     .from('products')
     .select('*')
-    .order('created_at', { ascending: false }); // 최신순 정렬
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1);
 
   if (error) {
     console.error('상품 목록 가져오기 오류:', error.message);
