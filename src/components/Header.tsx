@@ -26,8 +26,6 @@ const Header: React.FC = () => {
         toast.success('로그아웃 되었습니다.');
     };
 
-    // if (isPending) return undefined;
-
     return (
         <header className="flex items-center justify-between p-6 bg-white shadow-[0_1.5px_0px_0px_rgba(0,0,0,0.2)] h-20 max-w-[1400px] mx-auto">
             {/* 왼쪽: 로고 */}

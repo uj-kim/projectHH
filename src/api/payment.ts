@@ -101,7 +101,7 @@ export const updatePaymentStatus = async (paymentData: {
 }): Promise<Database["public"]["Tables"]["payments"]["Row"]> => {
     console.log("🔍 결제 상태 업데이트 요청:", paymentData);
 
-    const { data, error } = await supabase
+    const { data: payment, error } = await supabase
         .from("payments")
         .insert(paymentData)
         .select()
@@ -110,8 +110,17 @@ export const updatePaymentStatus = async (paymentData: {
     if (error) {
         throw new Error(error.message);
     }
+    // orders 테이블의 status를 'Completed'로 업데이트
+    const { data: order, error: orderError } = await supabase
+        .from("orders")
+        .update({ status: "Completed" })
+        .eq("order_id", paymentData.order_id);
 
-    return data;
+    if (orderError) {
+        throw new Error(orderError.message);
+    }
+    
+    return payment;
 };
 
 /**
