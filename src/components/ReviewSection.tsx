@@ -1,9 +1,8 @@
 // src/components/reviews/ReviewSection.tsx
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { getReviewsByProductId, getPurchasedCount, getReviewCount } from '@/api/reviews';
 import { Database } from '@/types/database.types';
 import { useAuth } from '@/hooks/useAuth'; // 인증 훅
-import { toast } from 'react-toastify';
 import { FaStar } from 'react-icons/fa';
 import ReviewForm from './reviews/ReviewForm';
 
@@ -12,7 +11,6 @@ interface ReviewSectionProps {
 }
 
 const ReviewSection: React.FC<ReviewSectionProps> = ({ productId }) => {
-    const queryClient = useQueryClient();
     const { data: user, isLoading: isAuthLoading, isError: isAuthError } = useAuth();
 
     // 리뷰 가져오기
@@ -28,17 +26,6 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ productId }) => {
         gcTime: 30 * 60 * 1000,
         refetchOnWindowFocus: false,
     });
-
-    // // 구매 여부 확인: 구매자에 한해서 리뷰작성 폼 활성화
-    // const {
-    //     data: hasPurchased,
-    //     isLoading: isPurchaseLoading,
-    //     isError: isPurchaseError,
-    // } = useQuery<boolean, Error>({
-    //     queryKey: ['purchase', productId, user?.id],
-    //     queryFn: () => checkUserPurchasedProduct(productId, user!.id),
-    //     enabled: !!user,
-    // });
 
     // 구매 건수와 리뷰 건수를 가져오기 (user가 있을 때만)
     const {

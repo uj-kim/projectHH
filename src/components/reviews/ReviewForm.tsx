@@ -24,6 +24,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId }) => {
         onSuccess: () => {
             toast.success('리뷰가 성공적으로 추가되었습니다!');
             queryClient.invalidateQueries({ queryKey: ['reviews', productId] });
+            queryClient.invalidateQueries({ queryKey: ['reviewCount', productId, user?.id] });
             setNewReview({ rating: 5, comment: '' });
         },
         onError: (error: Error) => {
