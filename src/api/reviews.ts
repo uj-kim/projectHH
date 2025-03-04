@@ -7,9 +7,9 @@ import { Database } from '@/types/database.types';
  * @param productId - 상품 ID
  * @returns 리뷰 목록
  */
-export const getReviewsByProductId = async (productId: string): Promise<Database['public']['Tables']['reviews']['Row'][]> => {
+export const getReviewsByProductId = async (productId: string): Promise<Database['public']['Views']['reviews_with_nickname']['Row'][]> => {
     const { data, error } = await supabase
-        .from('reviews')
+        .from('reviews_with_nickname')
         .select('*')
         .eq('product_id', productId)
         .order('created_at', { ascending: false }); // 최신 리뷰가 먼저 오도록 정렬

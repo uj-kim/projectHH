@@ -21,7 +21,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ productId }) => {
         isLoading,
         isError,
         error,
-    } = useQuery<Database['public']['Tables']['reviews']['Row'][], Error>({
+    } = useQuery<Database['public']['Views']['reviews_with_nickname']['Row'][], Error>({
         queryKey: ['reviews', productId],
         queryFn: () => getReviewsByProductId(productId),
         staleTime: 5 * 60 * 1000,
@@ -91,24 +91,27 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ productId }) => {
                     {reviews && reviews.length > 0 ? (
                         reviews.map((review) => (
                             <div key={review.review_id} className="border p-4 rounded-md">
-                                <div className="flex items-center">
-                                    {/* 별점 표시 */}
-                                    <div className="flex">
-                                        {[...Array(5)].map((_, index) => (
-                                            <FaStar
-                                                key={index}
-                                                className={`${
-                                                    index < review.rating ? 'text-yellow-500' : 'text-gray-300'
-                                                }`}
-                                            />
-                                        ))}
-                                    </div>
-                                    <span className="ml-2 text-gray-600">
+                                {/* 상단: 별점 */}
+                                <div className="flex">
+                                    {[...Array(5)].map((_, index) => (
+                                        <FaStar
+                                            key={index}
+                                            size={18}
+                                            className={`${
+                                                index < (review.rating || 0) ? 'text-yellow-500' : 'text-gray-300'
+                                            }`}
+                                        />
+                                    ))}
+                                </div>
+                                {/* 중간: 리뷰 내용 */}
+                                <p className="mt-2 text-left">{review.comment}</p>
+                                {/* 하단: 작성자 닉네임과 날짜 */}
+                                <div className="mt-2 text-gray-600 text-xs text-left">
+                                    <span className="p-1">{review.nickname ? review.nickname : 'Anonymous'}</span>
+                                    <span className="p-1">
                                         {new Date(review.created_at || '').toLocaleDateString()}
                                     </span>
                                 </div>
-                                <p className="mt-2">{review.comment}</p>
-                                {/* 리뷰 작성자 정보 추가 가능 */}
                             </div>
                         ))
                     ) : (
