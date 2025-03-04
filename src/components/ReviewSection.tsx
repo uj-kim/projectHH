@@ -1,7 +1,6 @@
 // src/components/reviews/ReviewSection.tsx
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getReviewsByProductId, addReview, checkUserPurchasedProduct } from '@/api/reviews';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { getReviewsByProductId, getPurchasedCount, getReviewCount } from '@/api/reviews';
 import { Database } from '@/types/database.types';
 import { useAuth } from '@/hooks/useAuth'; // 인증 훅
 import { toast } from 'react-toastify';
@@ -30,16 +29,41 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ productId }) => {
         refetchOnWindowFocus: false,
     });
 
-    // 구매 여부 확인: 구매자에 한해서 리뷰작성 폼 활성화
+    // // 구매 여부 확인: 구매자에 한해서 리뷰작성 폼 활성화
+    // const {
+    //     data: hasPurchased,
+    //     isLoading: isPurchaseLoading,
+    //     isError: isPurchaseError,
+    // } = useQuery<boolean, Error>({
+    //     queryKey: ['purchase', productId, user?.id],
+    //     queryFn: () => checkUserPurchasedProduct(productId, user!.id),
+    //     enabled: !!user,
+    // });
+
+    // 구매 건수와 리뷰 건수를 가져오기 (user가 있을 때만)
     const {
-        data: hasPurchased,
-        isLoading: isPurchaseLoading,
-        isError: isPurchaseError,
-    } = useQuery<boolean, Error>({
-        queryKey: ['purchase', productId, user?.id],
-        queryFn: () => checkUserPurchasedProduct(productId, user!.id),
+        data: purchasedCount,
+        isLoading: isPurchasedCountLoading,
+        isError: isPurchasedCountError,
+    } = useQuery<number, Error>({
+        queryKey: ['purchasedCount', productId, user?.id],
+        queryFn: () => getPurchasedCount(productId, user!.id),
         enabled: !!user,
     });
+
+    const {
+        data: reviewCount,
+        isLoading: isReviewCountLoading,
+        isError: isReviewCountError,
+    } = useQuery<number, Error>({
+        queryKey: ['reviewCount', productId, user?.id],
+        queryFn: () => getReviewCount(productId, user!.id),
+        enabled: !!user,
+    });
+
+    // 구매 건수 > 리뷰 건수를 비교해서 리뷰 작성 가능 여부 판단
+    const canUserReview =
+        user && purchasedCount !== undefined && reviewCount !== undefined ? purchasedCount > reviewCount : false;
 
     // 별점 평균 계산 함수
     const avgRating =
@@ -105,12 +129,12 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ productId }) => {
 
             {/* 리뷰 작성 영역 - 구매자에 한해서 ReviewForm 렌더링 */}
             <div className="mt-8">
-                {isAuthLoading || isPurchaseLoading ? (
+                {isAuthLoading || isPurchasedCountLoading || isReviewCountLoading ? (
                     <p>로딩 중입니다...</p>
-                ) : isAuthError || isPurchaseError ? (
+                ) : isAuthError || isPurchasedCountError || isReviewCountError ? (
                     <p className="text-red-500">해당 상품 구매 여부를 판단하는 중 오류가 발생했습니다.</p>
                 ) : (
-                    hasPurchased && (
+                    canUserReview && (
                         <div>
                             <h4 className="text-xl font-semibold mb-2">리뷰 작성</h4>
                             <ReviewForm productId={productId} />
