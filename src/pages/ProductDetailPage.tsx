@@ -4,7 +4,7 @@ import { getProductById } from '@/api/products';
 import { Database } from '@/types/database.types';
 import ProductDetail from '@/components/products/ProductDetail';
 import { useQuery } from '@tanstack/react-query';
-import ReviewSection from '@/components/Review';
+import ReviewSection from '@/components/ReviewSection';
 
 const ProductDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();

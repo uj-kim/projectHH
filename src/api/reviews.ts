@@ -38,3 +38,28 @@ export const addReview = async (review: Database['public']['Tables']['reviews'][
 
     return data;
 };
+
+/**
+ * 리뷰작성 활성화 - 해당 상품 구매자인지 확인하는 함수
+ * @param productId - 상품 ID
+ * @param userId - 사용자 ID    
+ * @returns 구매 여부
+ */
+export const checkUserPurchasedProduct = async (
+    productId: string,
+    userId: string
+    ): Promise<boolean> => {
+        const { data, error } = await supabase
+            .from('order_details')
+            .select('order_id')
+            .eq('product_id', productId)
+            .eq('buyer_id', userId)
+            .eq('status', 'Completed')
+            .limit(1);
+
+        if (error) {
+            throw new Error(error.message);
+        }
+
+        return data && data.length > 0;
+    };
