@@ -41,9 +41,28 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ productId }) => {
         enabled: !!user,
     });
 
+    // 별점 평균 계산 함수
+    const avgRating =
+        reviews && reviews.length > 0
+            ? reviews.reduce((sum, review) => sum + (review.rating || 0), 0) / reviews.length
+            : 0;
+    // 평균 별점 아이콘
+    const totalAverageStars = () => {
+        if (!reviews || reviews.length === 0) return null;
+        return (
+            <span className="mr-4 inline-flex items-center">
+                {[...Array(5)].map((_, i) => (
+                    <FaStar key={i} size={32} className={i < avgRating ? 'text-yellow-500' : 'text-gray-300'} />
+                ))}
+            </span>
+        );
+    };
     return (
         <div className="mt-8">
-            <h3 className="text-2xl font-semibold mb-4">리뷰 ({reviews?.length || 0})</h3>
+            <h3 className="text-2xl text-left font-semibold mb-4">
+                {totalAverageStars()}
+                리뷰 ({reviews?.length || 0})
+            </h3>
 
             {/* 리뷰 목록 */}
             {isLoading ? (
