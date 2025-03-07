@@ -124,7 +124,6 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ productId }) => {
                     canUserReview && (
                         <div>
                             <h4 className="text-xl font-semibold mb-2">리뷰 작성</h4>
-                            <ReviewForm productId={productId} />
                         </div>
                     )
                 )}

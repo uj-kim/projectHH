@@ -134,7 +134,7 @@ export const getCompletedOrders = async (userId: string): Promise<OrderDetail[]>
         .select("*")
         .eq("buyer_id", userId)
         .eq("payment_status", "Completed") // 'Completed'인 결제 상태만 필터링
-        .order("created_at", { ascending: false });
+        .order("payment_created_at", { ascending: false }); // 변경: payment_created_at으로 정렬
 
     if (error) {
         throw new Error(error.message);
@@ -142,3 +142,4 @@ export const getCompletedOrders = async (userId: string): Promise<OrderDetail[]>
 
     return data as OrderDetail[];
 };
+
