@@ -7,10 +7,12 @@ import { toast } from 'react-toastify';
 import { FaStar } from 'react-icons/fa';
 
 interface ReviewFormProps {
+    orderId: string;
     productId: string;
+    onClose: () => void;
 }
 
-const ReviewForm: React.FC<ReviewFormProps> = ({ productId }) => {
+const ReviewForm: React.FC<ReviewFormProps> = ({ orderId, productId, onClose }) => {
     const queryClient = useQueryClient();
     const { data: user } = useAuth();
 
@@ -21,10 +23,10 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId }) => {
 
     const mutation = useMutation({
         mutationFn: addReview,
-        onSuccess: () => {
-            toast.success('리뷰가 성공적으로 추가되었습니다!');
-            queryClient.invalidateQueries({ queryKey: ['reviews', productId] });
-            queryClient.invalidateQueries({ queryKey: ['reviewCount', productId, user?.id] });
+        onSuccess: async (data) => {
+            await queryClient.invalidateQueries({ queryKey: ['reviews', productId] });
+            await queryClient.invalidateQueries({ queryKey: ['completedOrders', user?.id] });
+            onClose();
             setNewReview({ rating: 5, comment: '' });
         },
         onError: (error: Error) => {
@@ -50,6 +52,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId }) => {
         }
 
         const reviewData: Database['public']['Tables']['reviews']['Insert'] = {
+            order_id: orderId,
             product_id: productId,
             user_id: user.id,
             rating: newReview.rating,

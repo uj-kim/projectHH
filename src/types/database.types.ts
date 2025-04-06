@@ -33,18 +33,21 @@ export type Database = {
           order_id: string
           order_quantity: number
           product_id: string
+          review_id: string | null
         }
         Insert: {
           is_packaged: boolean
           order_id: string
           order_quantity: number
           product_id: string
+          review_id?: string | null
         }
         Update: {
           is_packaged?: boolean
           order_id?: string
           order_quantity?: number
           product_id?: string
+          review_id?: string | null
         }
         Relationships: [
           {
@@ -60,6 +63,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "order_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "order_details"
+            referencedColumns: ["product_id"]
           },
           {
             foreignKeyName: "order_products_product_id_fkey"
@@ -190,6 +200,7 @@ export type Database = {
         Row: {
           comment: string | null
           created_at: string | null
+          order_id: string | null
           product_id: string
           rating: number
           review_id: string
@@ -198,6 +209,7 @@ export type Database = {
         Insert: {
           comment?: string | null
           created_at?: string | null
+          order_id?: string | null
           product_id: string
           rating: number
           review_id?: string
@@ -206,12 +218,34 @@ export type Database = {
         Update: {
           comment?: string | null
           created_at?: string | null
+          order_id?: string | null
           product_id?: string
           rating?: number
           review_id?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_details"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "order_details"
+            referencedColumns: ["product_id"]
+          },
           {
             foreignKeyName: "reviews_product_id_fkey"
             columns: ["product_id"]
@@ -259,30 +293,37 @@ export type Database = {
       order_details: {
         Row: {
           buyer_id: string | null
-          created_at: string | null
+          category_id: string | null
           delivery_address: string | null
+          description: string | null
           image_url: string | null
-          nickname: string | null
+          is_packaged: boolean | null
+          order_created_at: string | null
           order_id: string | null
           order_quantity: number | null
           payment_created_at: string | null
           payment_id: string | null
           payment_method: string | null
           payment_status: string | null
+          payment_user_id: string | null
           price: number | null
+          product_created_at: string | null
           product_id: string | null
           product_name: string | null
+          product_updated_at: string | null
+          quantity: number | null
+          review_id: string | null
           seller_id: string | null
           status: string | null
           total_price: number | null
         }
         Relationships: [
           {
-            foreignKeyName: "order_products_product_id_fkey"
-            columns: ["product_id"]
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
             isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["product_id"]
+            referencedRelation: "categories"
+            referencedColumns: ["category_id"]
           },
         ]
       }
@@ -297,6 +338,13 @@ export type Database = {
           user_id: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "order_details"
+            referencedColumns: ["product_id"]
+          },
           {
             foreignKeyName: "reviews_product_id_fkey"
             columns: ["product_id"]

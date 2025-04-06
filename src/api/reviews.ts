@@ -39,31 +39,6 @@ export const addReview = async (review: Database['public']['Tables']['reviews'][
     return data;
 };
 
-// /**
-//  * 리뷰작성 활성화 - 해당 상품 구매자인지 판별하는 함수
-//  * @param productId - 상품 ID
-//  * @param userId - 사용자 ID    
-//  * @returns 구매 여부
-//  */
-// export const checkUserPurchasedProduct = async (
-//     productId: string,
-//     userId: string
-//     ): Promise<boolean> => {
-//         const { data, error } = await supabase
-//             .from('order_details')
-//             .select('order_id')
-//             .eq('product_id', productId)
-//             .eq('buyer_id', userId)
-//             .eq('status', 'Completed')
-//             .limit(1);
-
-//         if (error) {
-//             throw new Error(error.message);
-//         }
-
-//         return data && data.length > 0;
-//     };
-
     /**
  * 사용자 해당 상품 구매 건수 조회(주문별)
  * @param productId - 상품 ID
@@ -110,3 +85,26 @@ export const getReviewCount = async (
 
     return count || 0;
 };
+
+// /***
+//  * order_products 테이블의 해당 주문 행에 review_id를 업데이트하는 함수
+//  * @param orderId - 주문 ID (order_products)
+//  * @param productId - 상품 ID
+//  * @param reviewId - 생성된 리뷰 ID
+//  */
+// export const updateOrderProductsReview = async (
+//     orderId: string,
+//     productId: string,
+//     reviewId: string
+// ): Promise<Database['public']['Tables']['order_products']['Row']> => {
+//     const { data, error } = await supabase
+//         .from('order_products')
+//         .update({ review_id: reviewId })
+//         .eq('order_id', orderId)
+//         .eq('product_id', productId)
+//         .single();
+//     if (error) {
+//         throw new Error(error.message);
+//     }
+//     return data;
+// };

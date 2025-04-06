@@ -32,10 +32,10 @@ const Header: React.FC = () => {
             <div className="flex items-center">
                 <Link to="/">
                     {/* 로고 이미지 사용 시 */}
-                    {/* <img src="/path-to-logo.png" alt="Logo" className="h-10" /> */}
+                    <img src="/logo.png" alt="Logo" className="h-20 w-auto" />
 
                     {/* 텍스트 로고 사용 시 */}
-                    <h1 className="text-2xl font-bold text-brand">My App</h1>
+                    {/* <h1 className="text-2xl font-bold text-brand">My App</h1> */}
                 </Link>
             </div>
 
