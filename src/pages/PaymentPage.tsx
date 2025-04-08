@@ -177,6 +177,10 @@ const PaymentPage: React.FC = () => {
                     storeId={import.meta.env.VITE_PORTONE_STORE_ID!}
                     channelKey={import.meta.env.VITE_PORTONE_CHANNEL_KEY!}
                     completePaymentAction={handleCompletePayment}
+                    onCancel={() => {
+                        console.log('🧹 PaymentPage: orderId 초기화');
+                        setOrderId(null); // ✅ 중요!
+                    }}
                 />
             )}
         </div>

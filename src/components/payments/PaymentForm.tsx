@@ -3,6 +3,7 @@ import * as PortOne from '@portone/browser-sdk/v2';
 import { Currency } from '@portone/browser-sdk/dist/v2/entity';
 import { Customer } from '@portone/browser-sdk/dist/v2/entity';
 import { randomId } from '@/lib/random';
+import { cancelOrder } from '@/api/payment';
 
 export type PaymentStatus = {
     status: string;
@@ -22,6 +23,7 @@ export type PaymentFormProps = {
         paymentId: string,
         order: { orderNumber: string; totalAmount: number }
     ) => Promise<PaymentStatus>;
+    onCancel?: () => void;
 };
 
 export type PaymentFormHandle = {
@@ -30,7 +32,18 @@ export type PaymentFormHandle = {
 
 const PaymentForm = forwardRef<PaymentFormHandle, PaymentFormProps>(
     (
-        { item, orderNumber, totalAmount, fullName, email, phoneNumber, storeId, channelKey, completePaymentAction },
+        {
+            item,
+            orderNumber,
+            totalAmount,
+            fullName,
+            email,
+            phoneNumber,
+            storeId,
+            channelKey,
+            completePaymentAction,
+            onCancel,
+        },
         ref
     ) => {
         const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>({ status: 'IDLE' });
@@ -55,6 +68,25 @@ const PaymentForm = forwardRef<PaymentFormHandle, PaymentFormProps>(
             });
 
             if (response?.code !== undefined) {
+                const isUserCancelled = response.message?.includes('알 수 없는 이유');
+
+                if (isUserCancelled) {
+                    console.warn('사용자가 결제를 취소했습니다.');
+                    setPaymentStatus({ status: 'IDLE' });
+
+                    try {
+                        console.log('🧪 주문 삭제 요청 시작', orderNumber);
+                        await cancelOrder(orderNumber);
+                        console.log('✅ 결제 취소로 인한 주문 삭제 완료');
+                        onCancel?.();
+                    } catch (cancelError) {
+                        console.error('❌ 주문 삭제 중 오류:', cancelError);
+                    }
+
+                    return;
+                }
+
+                // 기타 실패 상황
                 console.error('결제 실패:', response.message);
                 setPaymentStatus({ status: 'FAILED', message: response.message });
                 return;

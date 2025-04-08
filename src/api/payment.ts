@@ -24,7 +24,21 @@ export const createOrder = async (
         .eq("order_id", orderId)
         .select()
         .single();
-
+        
+        if (error && error.code === "PGRST116") {
+            // update 실패 시 insert 대체 (필요시)
+            const { data: inserted, error: insertError } = await supabase
+                .from("orders")
+                .insert([{ order_id: orderId, ...orderData }])
+                .select()
+                .single();
+    
+            if (insertError) {
+                throw new Error(insertError.message);
+            }
+            return inserted;
+        }
+    
     if (error) {
         throw new Error(error.message);
     }
@@ -141,5 +155,20 @@ export const getCompletedOrders = async (userId: string): Promise<OrderDetail[]>
     }
 
     return data as OrderDetail[];
+};
+
+export const cancelOrder = async (orderId: string): Promise<void> => {
+    console.log("📦 Supabase 주문 삭제 요청:", orderId);
+    const { error } = await supabase
+        .from("orders")
+        .delete()
+        .eq("order_id", orderId);
+
+    if (error) {
+        console.error("❌ Supabase 주문 삭제 실패:", error);
+        throw new Error(`주문 삭제 실패: ${error.message}`);
+    }
+
+    console.log("🧹 주문 삭제 성공");
 };
 
