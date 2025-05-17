@@ -14,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { ReviewModal } from "@/features/Reviews/ReviewModal";
+import ReviewModal from "@/features/Reviews/ReviewModal";
 const PurchaseHistoryTable: React.FC = () => {
   const {
     data: user,

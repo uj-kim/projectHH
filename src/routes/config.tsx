@@ -2,21 +2,21 @@
 import React, { lazy } from "react";
 import HomePage from "@/features/Home/HomePage"; // 메인페이지는 일반 import
 
-const CartPage = lazy(() => import("@/features/Cart/CartPage.tsx"));
+const CartPage = lazy(() => import("@/features/Cart/CartPage"));
 const ProductDetailPage = lazy(
-  () => import("@/features/Products/ProductDetailPage.tsx")
+  () => import("@/features/Products/ProductDetailPage")
 );
-const CategoryPage = lazy(() => import("@/features/Home/CategoryPage.tsx"));
-const SearchPage = lazy(() => import("@/features/Search/SearchPage.tsx"));
+const CategoryPage = lazy(() => import("@/features/Home/CategoryPage"));
+const SearchPage = lazy(() => import("@/features/Search/SearchPage"));
 import WishlistPage from "@/features/Wishlist/WishlistPage"; // 위시리스트 페이지는 일반 import
 const ProductRegisterPage = lazy(
-  () => import("@/features/Products/ProductRegisterPage.tsx")
+  () => import("@/features/Products/ProductRegisterPage")
 );
 const ProductEditPage = lazy(
-  () => import("@/features/Products/ProductEditPage.tsx")
+  () => import("@/features/Products/ProductEditPage")
 );
-const PaymentPage = lazy(() => import("@/features/Payments/PaymentPage.tsx"));
-const MyPage = lazy(() => import("@/features/Mypage/MyPage.tsx"));
+const PaymentPage = lazy(() => import("@/features/Payments/PaymentPage"));
+const MyPage = lazy(() => import("@/features/Mypage/MyPage"));
 
 export interface RouteConfig {
   path: string; // 라우트 경로

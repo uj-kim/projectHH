@@ -3,7 +3,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { createProduct } from "@/api/products";
-import ProductForm, { ProductFormData } from "./ProductForm.tsx";
+import ProductForm, { ProductFormData } from "./ProductForm";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useProductFormStore } from "@/stores/productStore";
