@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { ProductFormData } from "@/features/Products/ProductForm.tsx";
+import { ProductFormData } from "@/features/Products/ProductForm";
 interface ProductFormState {
   productName: string;
   price: number;
@@ -92,6 +92,6 @@ export const useProductFormStore = create<ProductFormState>()(
         errorMessage: state.errorMessage,
         isSubmitting: state.isSubmitting,
       }),
-    }
-  )
+    },
+  ),
 );
