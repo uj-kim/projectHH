@@ -1,6 +1,6 @@
 // supabase/payment-complete/index.ts
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { corsHeaders } from "../_shared/cors.ts";
+import { corsHeaders } from "supabase/cors.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
 console.log("PortOne Webhook (Payment Complete) Function Running");

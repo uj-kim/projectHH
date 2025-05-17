@@ -1,6 +1,6 @@
 // src/hooks/useUserProfile.ts
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabaseClient';
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabaseClient";
 
 export type UserProfile = {
   user_id: string;
@@ -22,9 +22,9 @@ export const getUserProfile = async (): Promise<UserProfile | null> => {
   const userId = authData.user.id;
   // user_profiles 테이블에서 해당 사용자의 프로필을 조회합니다.
   const { data, error } = await supabase
-    .from('user_profiles')
-    .select('*')
-    .eq('user_id', userId)
+    .from("user_profiles")
+    .select("*")
+    .eq("user_id", userId)
     .maybeSingle();
   if (error) {
     throw new Error(error.message);
@@ -34,7 +34,7 @@ export const getUserProfile = async (): Promise<UserProfile | null> => {
 
 export const useUserProfile = () => {
   return useQuery<UserProfile | null, Error>({
-    queryKey: ['userProfile'], 
+    queryKey: ["userProfile"],
     queryFn: getUserProfile,
     staleTime: Infinity,
     refetchOnWindowFocus: false,

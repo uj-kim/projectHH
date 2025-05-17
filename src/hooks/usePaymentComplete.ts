@@ -1,5 +1,5 @@
-import { useMutation } from '@tanstack/react-query';
-import { completePayment } from '@/api/payment';
+import { useMutation } from "@tanstack/react-query";
+import { completePayment } from "@/api/payment";
 
 export const useCompletePayment = () => {
   return useMutation({

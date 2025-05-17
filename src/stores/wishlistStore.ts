@@ -1,6 +1,6 @@
 // src/stores/wishlistStore.ts
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export interface Product {
   product_id: string;
@@ -26,19 +26,26 @@ export const useWishlist = create<WishlistState>()(
       addToWishlist: (userId, product) => {
         set((state) => {
           const current = state.wishlists[userId] || [];
-          return { wishlists: { ...state.wishlists, [userId]: [...current, product] } };
+          return {
+            wishlists: { ...state.wishlists, [userId]: [...current, product] },
+          };
         });
       },
       removeFromWishlist: (userId, productId) => {
         set((state) => {
           const current = state.wishlists[userId] || [];
-          return { wishlists: { ...state.wishlists, [userId]: current.filter(p => p.product_id !== productId) } };
+          return {
+            wishlists: {
+              ...state.wishlists,
+              [userId]: current.filter((p) => p.product_id !== productId),
+            },
+          };
         });
       },
       toggleWishlist: (userId, product) => {
         const { wishlists, addToWishlist, removeFromWishlist } = get();
         const current = wishlists[userId] || [];
-        const exists = current.some(p => p.product_id === product.product_id);
+        const exists = current.some((p) => p.product_id === product.product_id);
         if (exists) {
           removeFromWishlist(userId, product.product_id);
         } else {
@@ -53,6 +60,6 @@ export const useWishlist = create<WishlistState>()(
         });
       },
     }),
-    { name: 'wishlist-storage' }
+    { name: "wishlist-storage" }
   )
 );
