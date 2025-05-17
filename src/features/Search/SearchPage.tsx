@@ -3,7 +3,7 @@ import React from "react";
 import { useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { searchProducts } from "@/api/products";
-import ProductCard from "@/features/Products/ProductCard;
+import ProductCard from "@/features/Products/ProductCard";
 import { Database } from "@/types/database.types";
 
 const useQueryParams = () => {
