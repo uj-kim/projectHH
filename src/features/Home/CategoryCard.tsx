@@ -18,32 +18,17 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
   return (
     <Link
       to={`/c/${category.category_id}`}
-      className="flex flex-col items-center justify-center p-4 bg-white rounded-lg border-2 border-transparent transition-all duration-300 aspect-[3/4] shadow-none hover:shadow-xl"
+      className="flex flex-col items-center justify-center w-20 sm:w-24 gap-2 py-4 hover:bg-gray-50 rounded-lg transition-all"
     >
-      <div className="relative flex justify-center items-center w-24 h-24 md:w-32 md:h-32 lg:w-32 lg:h-32 mb-4">
-        {!imageLoaded && (
-          <div className="absolute inset-0 flex justify-center items-center">
-            <Skeleton
-              circle={true}
-              height={96} // w-24에 해당하는 픽셀 값 (예: 96px)
-              width={96}
-              duration={1.2}
-              baseColor="#f0f0f0"
-              highlightColor="#e0e0e0"
-            />
-          </div>
-        )}
-        <img
-          src={category.category_image_url || "/placeholder.png"}
-          alt={category.category_name}
-          loading="eager"
-          onLoad={() => setImageLoaded(true)}
-          className={`w-full h-full object-cover rounded-full transition-opacity duration-500 ${
-            imageLoaded ? "opacity-100" : "opacity-0"
-          }`}
-        />
+      <div
+        className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center rounded-xl bg-gray-100 bg-cover bg-center"
+        style={{
+          backgroundImage: `url(${category.category_image_url || "/placeholder-icon.svg"})`,
+        }}
+      >
+        {/* 배경이므로 img 태그는 제거 */}
       </div>
-      <p className="text-sm sm:text-base font-semibold text-center text-gray-800">
+      <p className="text-xs sm:text-sm text-gray-700 text-center whitespace-nowrap">
         {category.category_name}
       </p>
     </Link>

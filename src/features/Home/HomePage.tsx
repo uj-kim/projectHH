@@ -69,7 +69,7 @@ const HomePage: React.FC = () => {
             </p>
           )}
           {!isCategoriesLoading && !isCategoriesError && (
-            <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 justify-items-center">
+            <div className="flex flex-wrap justify-between w-full max-w-6xl mx-auto">
               {categories && categories.length > 0 ? (
                 categories.map((category) => (
                   <CategoryCard
