@@ -1,5 +1,5 @@
 // src/pages/HomePage.tsx
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
 import { getProducts } from "@/api/products";
@@ -55,7 +55,7 @@ const HomePage: React.FC = () => {
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
-    <div className="p-4 min-h-screen">
+    <div className=" min-h-screen">
       <header className="mb-8"></header>
       <main>
         <section className="mb-12">
@@ -69,7 +69,7 @@ const HomePage: React.FC = () => {
             </p>
           )}
           {!isCategoriesLoading && !isCategoriesError && (
-            <div className="flex flex-wrap justify-between w-full max-w-6xl mx-auto">
+            <div className="flex flex-wrap justify-between w-full max-w-10xl mx-auto">
               {categories && categories.length > 0 ? (
                 categories.map((category) => (
                   <CategoryCard
