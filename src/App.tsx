@@ -46,7 +46,7 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen">
+      <div className="min-h-screen font-gmarket">
         {/* ProfileInitializer 컴포넌트를 추가하여, 로그인 후 프로필이 자동 생성되도록 합니다. */}
         <ProfileInitializer />
         <AppRoutes />

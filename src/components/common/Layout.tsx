@@ -6,7 +6,7 @@ const Layout: React.FC = () => {
   return (
     <div className="min-h-screen">
       <Header />
-      <main className="p-4">
+      <main className="px-12">
         <Outlet />
       </main>
     </div>
