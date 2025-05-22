@@ -60,7 +60,7 @@ const HomePage: React.FC = () => {
       <main>
         <section className="mb-12">
           {/* 카테고리 섹션 */}
-          <h3 className="ml-2 text-2xl font-semibold text-left text-gray-800">
+          <h3 className="text-2xl font-semibold text-left text-gray-800">
             카테고리별 쇼핑
           </h3>
           {isCategoriesError && (
@@ -69,7 +69,7 @@ const HomePage: React.FC = () => {
             </p>
           )}
           {!isCategoriesLoading && !isCategoriesError && (
-            <div className="flex flex-nowrap justify-between">
+            <div className="-mx-3 flex justify-between flex-nowrap">
               {categories && categories.length > 0 ? (
                 categories.map((category) => (
                   <CategoryCard

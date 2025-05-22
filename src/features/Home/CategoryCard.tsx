@@ -32,7 +32,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
           backgroundImage: `url(${category.category_image_url || "/placeholder.png"})`,
         }}
       />
-      <p className="text-sm font-medium text-gray-800 text-center whitespace-nowrap">
+      <p className="text-sm font-medium text-gray-800 whitespace-nowrap">
         {category.category_name}
       </p>
     </Link>
