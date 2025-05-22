@@ -20,10 +20,10 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
   return (
     <Link
       to={`/c/${category.category_id}`}
-      className="group flex flex-col items-center justify-center w-28 sm:w-32 gap-3 py-4 transition-all"
+      className="group flex flex-col items-center gap-3 py-4 transition-all flex-shrink-0 basis-[12%] max-w-[12%]"
     >
       <div
-        className={`w-24 h-36 sm:w-28 sm:h-40 bg-gray-100 bg-cover bg-center rounded-xl transition-all duration-200 ${
+        className={`w-[80%] aspect-[3/4] bg-gray-100 bg-cover bg-center rounded-xl transition-shadow duration-200 ${
           isActive
             ? "border-2 border-gray-900 shadow-[0px_1px_3px_0px_#0000004d,_0px_4px_8px_3px_#00000026] scale-105"
             : "border-2 border-transparent"

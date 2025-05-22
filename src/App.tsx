@@ -1,6 +1,5 @@
 // src/App.tsx
 
-import "./App.css";
 import AppRoutes from "@/routes/AppRoutes";
 import ProfileInitializer from "@/components/common/ProfileInitializer";
 import { useEffect } from "react";
