@@ -1,5 +1,5 @@
 // src/pages/HomePage.tsx
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
 import { getProducts } from "@/api/products";
@@ -55,13 +55,13 @@ const HomePage: React.FC = () => {
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
-    <div className="p-4 min-h-screen">
+    <div className=" min-h-screen">
       <header className="mb-8"></header>
       <main>
         <section className="mb-12">
           {/* 카테고리 섹션 */}
-          <h3 className="text-2xl font-semibold mb-6 text-center text-gray-800">
-            카 테 고 리
+          <h3 className="text-2xl font-semibold text-left text-gray-800">
+            카테고리별 쇼핑
           </h3>
           {isCategoriesError && (
             <p className="text-red-500 mb-4 text-center">
@@ -69,7 +69,7 @@ const HomePage: React.FC = () => {
             </p>
           )}
           {!isCategoriesLoading && !isCategoriesError && (
-            <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 justify-items-center">
+            <div className="-mx-3 flex justify-between flex-nowrap">
               {categories && categories.length > 0 ? (
                 categories.map((category) => (
                   <CategoryCard
@@ -85,7 +85,9 @@ const HomePage: React.FC = () => {
         </section>
         {/* 전체 상품 섹션 */}
         <section>
-          <h3 className="text-xl font-semibold mb-4">전체 상품 보기</h3>
+          <h3 className="text-2xl font-semibold text-left text-gray-800">
+            전체 상품 보기
+          </h3>
           {isProductsError && (
             <p className="text-red-500 mb-4">
               {productsError.message || "상품 목록을 불러오지 못했습니다."}

@@ -1,5 +1,5 @@
 // src/components/categories/CategoryCard.tsx
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -14,36 +14,25 @@ interface CategoryCardProps {
 
 const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
+  const location = useLocation();
+  const isActive = location.pathname === `/c/${category.category_id}`;
 
   return (
     <Link
       to={`/c/${category.category_id}`}
-      className="flex flex-col items-center justify-center p-4 bg-white rounded-lg border-2 border-transparent transition-all duration-300 aspect-[3/4] shadow-none hover:shadow-xl"
+      className="group flex flex-col items-center gap-3 py-4 transition-all flex-shrink-0 basis-[12%] max-w-[12%]"
     >
-      <div className="relative flex justify-center items-center w-24 h-24 md:w-32 md:h-32 lg:w-32 lg:h-32 mb-4">
-        {!imageLoaded && (
-          <div className="absolute inset-0 flex justify-center items-center">
-            <Skeleton
-              circle={true}
-              height={96} // w-24에 해당하는 픽셀 값 (예: 96px)
-              width={96}
-              duration={1.2}
-              baseColor="#f0f0f0"
-              highlightColor="#e0e0e0"
-            />
-          </div>
-        )}
-        <img
-          src={category.category_image_url || "/placeholder.png"}
-          alt={category.category_name}
-          loading="eager"
-          onLoad={() => setImageLoaded(true)}
-          className={`w-full h-full object-cover rounded-full transition-opacity duration-500 ${
-            imageLoaded ? "opacity-100" : "opacity-0"
-          }`}
-        />
-      </div>
-      <p className="text-sm sm:text-base font-semibold text-center text-gray-800">
+      <div
+        className={`w-[80%] aspect-[3/4] bg-gray-100 bg-cover bg-center rounded-xl transition-shadow duration-200 ${
+          isActive
+            ? "border-2 border-gray-900 shadow-[0px_1px_3px_0px_#0000004d,_0px_4px_8px_3px_#00000026] scale-105"
+            : "border-2 border-transparent"
+        } group-hover:shadow-[0px_1px_3px_0px_#0000004d,_0px_4px_8px_3px_#00000026] group-hover:scale-[1.03]`}
+        style={{
+          backgroundImage: `url(${category.category_image_url || "/placeholder.png"})`,
+        }}
+      />
+      <p className="text-sm font-medium text-gray-800 whitespace-nowrap">
         {category.category_name}
       </p>
     </Link>
