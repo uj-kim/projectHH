@@ -31,7 +31,9 @@ const SearchPage: React.FC = () => {
   return (
     <div className="p-4 min-h-screen">
       <header className="mb-8">
-        <h2 className="text-2xl font-semibold">검색 결과: "{searchQuery}"</h2>
+        <h2 className="text-2xl font-semibold">
+          "{searchQuery}"에 대한 검색 결과
+        </h2>
       </header>
       <main>
         <section>
