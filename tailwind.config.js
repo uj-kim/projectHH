@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+import plugin from "tailwindcss/plugin";
+
 export default {
   darkMode: ["class"],
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
@@ -56,5 +58,21 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    plugin(function ({ addUtilities }) {
+      addUtilities({
+        ".mask-fade-bottom": {
+          "-webkit-mask-image":
+            "linear-gradient(to bottom, black 10%, transparent 100%)",
+          "mask-image":
+            "linear-gradient(to bottom, black 10%, transparent 100%)",
+          "-webkit-mask-size": "100% 100%",
+          "mask-size": "100% 100%",
+          "-webkit-mask-repeat": "no-repeat",
+          "mask-repeat": "no-repeat",
+        },
+      });
+    }),
+  ],
 };

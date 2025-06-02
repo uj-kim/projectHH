@@ -129,7 +129,7 @@ const CartPage: React.FC = () => {
         </div>
       ) : (
         <>
-          <h1 className="text-3xl font-bold mb-6">장바구니</h1>
+          <h1 className="text-3xl font-bold mb-4">장바구니</h1>
 
           {isLoading && <p>로딩 중...</p>}
           {isError && (
