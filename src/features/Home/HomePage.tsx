@@ -58,8 +58,17 @@ const HomePage: React.FC = () => {
     <div className=" min-h-screen">
       <header className="mb-8"></header>
       <main>
-        <section className="mb-12">
-          {/* 카테고리 섹션 */}
+        {/* 배너 섹션 */}
+        {/* <section className="relative mb-[-300px] z-0">
+          <img
+            src="/banner01.webp"
+            alt=""
+            className="w-full max-h-[550px] object-fill mask-fade-bottom"
+          />
+        </section> */}
+        {/* 카테고리 섹션 */}
+        {/* <section className="relative z-10 mb-12"> */}
+        <section className="z-10 mb-12">
           <h3 className="text-2xl font-semibold text-left text-gray-800">
             카테고리별 쇼핑
           </h3>
@@ -85,7 +94,7 @@ const HomePage: React.FC = () => {
         </section>
         {/* 전체 상품 섹션 */}
         <section>
-          <h3 className="text-2xl font-semibold text-left text-gray-800">
+          <h3 className="text-2xl font-semibold text-left text-gray-800 pb-4">
             전체 상품 보기
           </h3>
           {isProductsError && (
