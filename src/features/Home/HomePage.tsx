@@ -46,7 +46,7 @@ const HomePage: React.FC = () => {
   });
 
   // Intersection Observer를 활용해 스크롤 시 추가 데이터를 불러옴.
-  const { ref, inView } = useInView();
+  const { ref, inView } = useInView({ rootMargin: "200px 0px" });
 
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
